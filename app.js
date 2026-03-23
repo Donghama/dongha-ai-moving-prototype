@@ -206,7 +206,7 @@
       render();
 
       // Show popup after all messages have faded in (1 render total)
-      const popupDelay = aiConversationMessages.length * 400 + 600;
+      const popupDelay = aiConversationMessages.length * 750 + 800;
       schedule(() => {
         state.a.showPopup = true;
         render();
@@ -221,7 +221,7 @@
         state.b.typing = false;
         render();
         if (done) {
-          schedule(done, messages.length * 400 + 200);
+          schedule(done, messages.length * 700 + 300);
         }
       }, initialDelay || 0);
     }
@@ -413,7 +413,7 @@
       const claudeAvatar = `<div class="avatar">C</div>`;
 
       const messagesHtml = state.a.chatMessages.map((msg, i) => {
-        const delay = `animation-delay:${(i * 0.38).toFixed(2)}s`;
+        const delay = `animation-delay:${(i * 0.75).toFixed(2)}s`;
         if (msg.from === 'gpt') {
           return `
             <div class="chat-row msg-anim" style="${delay}">
@@ -501,7 +501,7 @@
     // Condition B
     function renderChatMessages() {
       return state.b.messages.map((message, i) => `
-        <div class="chat-row msg-anim" style="animation-delay:${(i * 0.35).toFixed(2)}s">
+        <div class="chat-row msg-anim" style="animation-delay:${(i * 0.7).toFixed(2)}s">
           <div class="avatar">C</div>
           <div class="chat-bubble">${escapeHtml(message)}</div>
         </div>
