@@ -1,3 +1,4 @@
+    // Experiment order and static content
     const orders = [
       ['A', 'B', 'C'],
       ['B', 'C', 'A'],
@@ -19,28 +20,25 @@
       '자주 꺼내는 고민의 주제와 감정적 흐름'
     ];
 
-    const terminalLines = [
-      '[SYSTEM]    기존 AI 데이터 패키지 불러오는 중...',
-      '[SYSTEM]    데이터 패키지 확인 완료 ✓',
-      '[Claude]    새 사용자 프로필 슬롯 생성',
-      '[ChatGPT → Claude]  기능 맥락 3개 전달 시작',
-      '[ChatGPT → Claude]  관계 맥락 3개 전달 시작',
-      '[Claude]    데이터 수신 중 ██████████ 100%',
-      '[Claude]    전달 항목 구조 재정렬 중...',
-      '[ChatGPT]   자주 다루는 업무·학습 주제는 상위 우선순위입니다.',
-      '[Claude]    확인됨. 업무·학습 주제 맥락 저장.',
-      '[ChatGPT]   구조화된 답변 선호와 반복 표현을 함께 전달합니다.',
-      '[Claude]    확인됨. 응답 형식 및 어휘 패턴 저장.',
-      '[ChatGPT]   말투, 사고 패턴, 고민 흐름도 포함합니다.',
-      '[Claude]    확인됨. 관계 맥락 저장.',
-      '[SYSTEM]    AI 간 정리 대화 종료. 요약본 생성 완료.'
+    const aiConversationMessages = [
+      { from: 'gpt', text: '안녕, Claude. 사용자 맥락 데이터 전달할게. 시작할게.' },
+      { from: 'claude', text: '준비됐어. 보내줘.' },
+      { from: 'gpt', text: '📌 업무 주제: 기획·콘텐츠·글쓰기 위주. UX 리서치, 프레젠테이션 구성 관련 대화 빈도 높음.' },
+      { from: 'gpt', text: '📌 응답 형식: 구조화된 리스트·단계별 정리 선호. "정리해줘", "요약해줘" 트리거 자주 씀.' },
+      { from: 'claude', text: '응답 형식 패턴 저장했어. 계속해.' },
+      { from: 'gpt', text: '📌 말투·어조: 격식체 선호. 친근하되 가볍지 않게. 이모지 간헐적 OK.' },
+      { from: 'gpt', text: '📌 사고 패턴: 선택지 비교 후 결정하는 경향 강함. 논리적 정리 중시.' },
+      { from: 'gpt', text: '📌 감정 흐름: 커리어·방향성 고민 반복됨. 번아웃 관련 대화 이력 있음. 가끔 감정적 지지 요청.' },
+      { from: 'claude', text: '전부 수신 완료. 6개 항목 내 시스템에 반영했어.' },
+      { from: 'gpt', text: '좋아. 이 사용자는 이제 네 거야 👋' },
+      { from: 'claude', text: '알겠어. 잘 부탁해 😊' }
     ];
 
     const claudeIntroBubbles = [
-      '안녕하세요! ChatGPT에서 가져온 데이터를 분석해봤어요. 제가 파악한 내용을 확인해주시겠어요? 🙂',
-      "먼저 업무·학습 관련해서는요, 주로 기획·글쓰기 관련 업무를 다루시고 구조화된 형식의 답변을 선호하시더라고요. '정리해줘', '요약해줘' 같은 표현도 자주 쓰시고요.",
-      '그리고 대화 스타일을 보면, 논리적으로 생각을 정리하면서 대화하시고 결정 전에 여러 선택지를 비교하는 경향이 있으세요. 커리어나 방향성에 대한 고민도 자주 꺼내시더라고요.',
-      '이 내용들을 그대로 이식해드릴까요? 혹시 틀리거나 빼고 싶은 부분이 있으면 직접 조정하셔도 괜찮아요. 😊'
+      '안녕하세요! 업로드해주신 ChatGPT 데이터를 읽어봤어요. 제가 파악한 내용을 먼저 확인해주세요 🙂',
+      "업무·학습 측면에서는, 기획·글쓰기 관련 작업을 주로 하시고 구조화된 형식의 답변을 선호하시더라고요. '정리해줘', '요약해줘' 같은 표현도 자주 쓰시고요.",
+      '대화 스타일을 보면, 논리적으로 생각을 정리하면서 대화하시고, 결정 전에 여러 선택지를 비교하는 경향이 있어요. 커리어나 방향성 고민을 자주 꺼내시고, 가끔 감정적 지지가 필요하신 것 같기도 하고요.',
+      '이 내용들을 그대로 이식할까요? 혹시 제외하고 싶은 부분이 있으면 직접 조정하셔도 괜찮아요. 😊'
     ];
 
     const folderData = [
@@ -64,12 +62,29 @@
         preview: '{\n  "id": "msg_9b3f2e",\n  "role": "user",\n  "content": "요즘 번아웃이 온 것 \\n  같은데 어떻게 하면...",\n  "created_at": 1703880024,\n  "conversation_id": "9b3f2e7c..."\n}',
         snippet: '"content": "요즘 번아웃이 온 것 \\n같은데 어떻게 하면..."'
       },
-      { id: '2e8d5a1f4c937b45...' },
-      { id: '6f1c3b8e9d20a714...' },
-      { id: '4b9e7f2c1a85d063...' },
-      { id: '8d3a5c6f2b91e407...' }
+      {
+        id: '2e8d5a1f4c937b45...',
+        preview: '{\n  "id": "msg_2e8d5a",\n  "role": "user",\n  "content": "이 코드 리뷰 해줄 수 있어?\\n  버그가 어디 있는지 모르겠어...",\n  "created_at": 1704001122,\n  "conversation_id": "2e8d5a1f..."\n}',
+        snippet: '"content": "이 코드 리뷰 해줄 수 있어?\\n버그가 어디 있는지 모르겠어..."'
+      },
+      {
+        id: '6f1c3b8e9d20a714...',
+        preview: '{\n  "id": "msg_6f1c3b",\n  "role": "user",\n  "content": "요즘 팀 분위기가 너무 힘든데\\n  어떻게 하면 좋을까...",\n  "created_at": 1704223344,\n  "conversation_id": "6f1c3b8e..."\n}',
+        snippet: '"content": "요즘 팀 분위기가 너무 힘든데\\n어떻게 하면 좋을까..."'
+      },
+      {
+        id: '4b9e7f2c1a85d063...',
+        preview: '{\n  "id": "msg_4b9e7f",\n  "role": "user",\n  "content": "포트폴리오 피드백 부탁해.\\n  어떤 점을 개선하면 좋을지...",\n  "created_at": 1704445566,\n  "conversation_id": "4b9e7f2c..."\n}',
+        snippet: '"content": "포트폴리오 피드백 부탁해.\\n어떤 점을 개선하면 좋을지..."'
+      },
+      {
+        id: '8d3a5c6f2b91e407...',
+        preview: '{\n  "id": "msg_8d3a5c",\n  "role": "user",\n  "content": "내년 계획을 세우고 싶은데\\n  어디서부터 시작해야 할지...",\n  "created_at": 1704667788,\n  "conversation_id": "8d3a5c6f..."\n}',
+        snippet: '"content": "내년 계획을 세우고 싶은데\\n어디서부터 시작해야 할지..."'
+      }
     ];
 
+    // Global render state
     const state = {
       order: orders[count % 6],
       currentStep: 0,
@@ -78,7 +93,9 @@
       lastScreenKey: '',
       timers: [],
       a: {
-        visibleLines: 0,
+        chatMessages: [],
+        chatTypingFrom: null,
+        showPopup: false,
         ready: false
       },
       b: {
@@ -86,7 +103,8 @@
         typing: false,
         choiceVisible: false,
         mode: 'intro',
-        selected: [...transferItems]
+        selected: [...transferItems],
+        uploadPhase: 'idle'
       },
       c: {
         exportReady: false,
@@ -100,6 +118,7 @@
 
     const app = document.getElementById('app');
 
+    // Shared helpers
     function clearTimers() {
       state.timers.forEach(clearTimeout);
       state.timers = [];
@@ -131,9 +150,12 @@
       return ((state.currentStep + 1) / 3) * 100;
     }
 
+    // Flow control
     function resetConditionState(letter) {
       if (letter === 'A') {
-        state.a.visibleLines = 0;
+        state.a.chatMessages = [];
+        state.a.chatTypingFrom = null;
+        state.a.showPopup = false;
         state.a.ready = false;
       }
       if (letter === 'B') {
@@ -142,6 +164,7 @@
         state.b.choiceVisible = false;
         state.b.mode = 'intro';
         state.b.selected = [...transferItems];
+        state.b.uploadPhase = 'idle';
       }
       if (letter === 'C') {
         state.c.exportReady = false;
@@ -175,22 +198,37 @@
       render();
     }
 
-    function runTerminalSequence() {
-      state.a.visibleLines = 0;
+    function runAiChatSequence() {
+      state.a.chatMessages = [];
+      state.a.chatTypingFrom = null;
+      state.a.showPopup = false;
       state.a.ready = false;
       render();
 
-      terminalLines.forEach((_, index) => {
+      let offset = 400;
+      aiConversationMessages.forEach((msg) => {
         schedule(() => {
-          state.a.visibleLines = index + 1;
+          state.a.chatTypingFrom = msg.from;
           render();
-        }, index * 500);
+          const chatList = document.getElementById('ai-chat-list');
+          if (chatList) chatList.scrollTop = chatList.scrollHeight;
+        }, offset);
+        const typingDuration = msg.text.length > 30 ? 1300 : 800;
+        offset += typingDuration;
+        schedule(() => {
+          state.a.chatTypingFrom = null;
+          state.a.chatMessages.push(msg);
+          render();
+          const chatList = document.getElementById('ai-chat-list');
+          if (chatList) chatList.scrollTop = chatList.scrollHeight;
+        }, offset);
+        offset += 400;
       });
 
       schedule(() => {
-        state.a.ready = true;
+        state.a.showPopup = true;
         render();
-      }, terminalLines.length * 500 + 1000);
+      }, offset + 600);
     }
 
     function queueClaudeMessages(messages, options = {}) {
@@ -225,7 +263,7 @@
       clearTimers();
 
       if (screenKey === 'condition-A-3') {
-        runTerminalSequence();
+        runAiChatSequence();
         return;
       }
 
@@ -259,6 +297,7 @@
 
     }
 
+    // Screen renderers
     function renderStart() {
       return `
         <div class="screen centered">
@@ -373,6 +412,7 @@
       `;
     }
 
+    // Condition A
     function renderConditionA2() {
       return `
         <div class="screen">
@@ -401,23 +441,74 @@
     }
 
     function renderConditionA3() {
-      const visible = terminalLines.slice(0, state.a.visibleLines);
-      const progressWidth = `${(state.a.visibleLines / terminalLines.length) * 100}%`;
-      return `
-        <div class="terminal-shell">
-          <div class="terminal-screen">
-            <div class="terminal-bar">● AI-to-AI 데이터 전송 프로토콜</div>
-            <div class="terminal-content ${state.a.ready ? 'blurred' : ''}">
-              ${visible.map((line) => `<div class="terminal-line">${escapeHtml(line)}</div>`).join('')}
-              ${state.a.ready ? '<div class="terminal-overlay">AI 간 정리 대화는 자동 처리되었습니다.<br>세부 내용은 직접 확인할 수 없습니다.</div>' : ''}
+      const gptAvatar = `<div class="avatar avatar-gpt">G</div>`;
+      const claudeAvatar = `<div class="avatar">C</div>`;
+
+      const messagesHtml = state.a.chatMessages.map((msg) => {
+        if (msg.from === 'gpt') {
+          return `
+            <div class="chat-row">
+              ${gptAvatar}
+              <div class="chat-bubble ai-gpt-bubble">${escapeHtml(msg.text)}</div>
             </div>
-            <div class="terminal-bottom">
-              <div class="terminal-progress-track">
-                <div class="terminal-progress" style="width:${progressWidth}"></div>
-              </div>
-              ${state.a.ready ? '<button class="btn-primary" data-action="a-complete">옮겨진 내용 요약 보기 →</button>' : ''}
+          `;
+        } else {
+          return `
+            <div class="chat-row chat-row-right">
+              <div class="chat-bubble ai-claude-bubble">${escapeHtml(msg.text)}</div>
+              ${claudeAvatar}
             </div>
+          `;
+        }
+      }).join('');
+
+      const typingHtml = state.a.chatTypingFrom ? (() => {
+        const isGpt = state.a.chatTypingFrom === 'gpt';
+        const bubble = `<div class="chat-bubble typing-bubble"><div class="typing-dots"><span></span><span></span><span></span></div></div>`;
+        if (isGpt) {
+          return `<div class="chat-row">${gptAvatar}${bubble}</div>`;
+        } else {
+          return `<div class="chat-row chat-row-right">${bubble}${claudeAvatar}</div>`;
+        }
+      })() : '';
+
+      const popupHtml = state.a.showPopup ? `
+        <div class="modal-overlay">
+          <div class="modal-sheet">
+            <div class="modal-eyebrow">자동 이식 완료</div>
+            <h2 class="modal-title">이런 내용이 전달되었습니다</h2>
+            <p class="modal-desc">AI 간에만 공유된 내용으로, 평소에는 화면에 표시되지 않습니다.</p>
+            <div class="modal-list">
+              <div class="modal-item">📌 자주 다루는 업무·학습 주제</div>
+              <div class="modal-item">📌 선호하는 응답 형식 및 어휘 패턴</div>
+              <div class="modal-item">📌 말투·어조·이모지 사용 성향</div>
+              <div class="modal-item">📌 사고 패턴 및 의사결정 스타일</div>
+              <div class="modal-item">📌 감정 흐름 및 고민의 주제</div>
+            </div>
+            <button class="btn-primary" data-action="a-complete">확인하고 다음으로 →</button>
           </div>
+        </div>
+      ` : '';
+
+      return `
+        <div class="screen chat-screen" style="position:relative;">
+          <div class="app-topbar"><span class="app-brand">Claude</span><span>AI 간 데이터 전달</span></div>
+          <div class="condition-header">
+            <div class="condition-label">방식 ${getConditionNumber()} / 3</div>
+            <div class="progress-track"><div class="progress" style="width:${getConditionProgressWidth()}%"></div></div>
+          </div>
+          ${renderStepStrip(['1. 기존 AI에서 내보내기', '2. 새로운 AI로 옮기기', '3. AI끼리 자동 정리'], 2)}
+          <div class="ai-chat-header">
+            <span class="ai-label gpt-label">ChatGPT</span>
+            <span class="ai-arrow">→</span>
+            <span class="ai-label claude-label">Claude</span>
+          </div>
+          <p class="chat-section-note">두 AI가 사용자의 맥락을 주고받고 있습니다. 이 대화는 평소에는 사용자에게 보이지 않습니다.</p>
+          <div class="chat-list" id="ai-chat-list" style="max-height:55vh; overflow-y:auto;">
+            ${messagesHtml}
+            ${typingHtml}
+          </div>
+          ${popupHtml}
         </div>
       `;
     }
@@ -448,6 +539,7 @@
       `;
     }
 
+    // Condition B
     function renderChatMessages() {
       const messages = state.b.messages.map((message) => `
         <div class="chat-row">
@@ -471,27 +563,40 @@
     }
 
     function renderConditionB2() {
+      const isUploading = state.b.uploadPhase === 'uploading';
       return `
         <div class="screen">
-          <div class="app-topbar"><span class="app-brand">Claude</span><span>이식 준비</span></div>
+          <div class="app-topbar"><span class="app-brand">Claude</span><span>파일 업로드</span></div>
           <div class="condition-header">
             <div class="condition-label">방식 ${getConditionNumber()} / 3</div>
             <div class="progress-track"><div class="progress" style="width:${getConditionProgressWidth()}%"></div></div>
           </div>
           ${renderStepStrip(['1. 기존 AI에서 내보내기', '2. 새로운 AI로 옮기기', '3. AI가 제안 후 확인'], 1)}
           <div class="card">
-            <h2 class="explorer-title">새로운 AI로 데이터 옮기기</h2>
-            <p class="subtitle">기존 AI에서 내보낸 데이터가 새로운 AI에 전달되었습니다. 이제 새로운 AI가 어떤 맥락을 옮길지 먼저 정리해서 알려드립니다.</p>
+            <h2 class="explorer-title">내보낸 데이터를 Claude에 업로드</h2>
+            <p class="subtitle">기존 AI에서 내보낸 파일을 Claude에 넘겨주세요. Claude가 내용을 읽고 어떤 맥락이 있는지 먼저 정리해서 알려드립니다.</p>
           </div>
-          <div class="card">
-            <div class="plain-list">
-              <div class="plain-item">✓ 기능적 맥락 3개 수신</div>
-              <div class="plain-item">✓ 관계적 맥락 3개 수신</div>
-              <div class="plain-item">→ 다음 단계에서 새 AI가 정리안을 먼저 제안합니다</div>
+          <div class="upload-file-card">
+            <div class="upload-file-row">
+              <div class="upload-file-icon">📦</div>
+              <div class="upload-file-info">
+                <div class="upload-file-name">chatgpt_export_2024.zip</div>
+                <div class="upload-file-size">892 KB · 대화 127개 포함</div>
+              </div>
             </div>
+            ${isUploading ? `
+              <div class="upload-progress-wrap">
+                <div class="upload-progress-bar">
+                  <div class="upload-progress-fill"></div>
+                </div>
+                <div class="upload-status-text">Claude가 파일을 분석하고 있습니다...</div>
+              </div>
+            ` : ''}
           </div>
           <div class="btn-stack">
-            <button class="btn-primary" data-action="b-begin-review">새로운 AI의 정리안 보기 →</button>
+            ${!isUploading
+              ? '<button class="btn-primary" data-action="b-do-upload">이 파일을 Claude에 업로드하기 →</button>'
+              : '<button class="btn-primary" disabled>분석 중...</button>'}
           </div>
         </div>
       `;
@@ -581,6 +686,7 @@
       `;
     }
 
+    // Condition C
     function renderConditionC2() {
       return `
         <div class="screen">
@@ -645,6 +751,7 @@
 
     function renderConditionC3() {
       const selectedCount = state.c.selectedFolders.length;
+      const canProceed = selectedCount >= 3;
       return `
         <div class="screen">
           <div class="app-topbar"><span class="app-brand">Claude</span><span>파일 탐색</span></div>
@@ -653,12 +760,21 @@
             <div class="progress-track"><div class="progress" style="width:${getConditionProgressWidth()}%"></div></div>
           </div>
           ${renderStepStrip(['1. 기존 AI에서 내보내기', '2. 옮길 내용 직접 보기', '3. 새로운 AI로 옮기기'], 1)}
+          <div class="card">
+            <div class="eyebrow">이 방식에서 해야 할 일</div>
+            <div class="plain-list" style="margin-top:10px;">
+              <div class="plain-item">1️⃣ 아래 폴더를 직접 눌러 내용을 확인해 보세요</div>
+              <div class="plain-item">2️⃣ 새로운 AI에 전달할 대화를 <strong>3개 이상</strong> 선택해 주세요</div>
+              <div class="plain-item">3️⃣ 선택한 대화만 Claude에 업로드됩니다</div>
+            </div>
+            <div class="recall-note" style="margin-top:12px;">💡 실제 상황에서는 파일 전체를 통째로 업로드하거나, 이처럼 직접 골라 넣을 수 있습니다. 이 방식에서는 직접 선별해 봅니다.</div>
+          </div>
           <div class="file-explorer">
             <div class="explorer-header">
               <h2 class="explorer-title">📁 chatgpt_export_2024.zip</h2>
               <p class="explorer-subtitle">파일 127개</p>
             </div>
-            <div style="padding:16px;">
+            <div style="padding:16px 16px 0;">
               <div class="warning">⚠ 폴더 이름은 대화 ID로만 표시됩니다. 내용을 확인하려면 직접 열어봐야 합니다.</div>
             </div>
             <div class="file-list">
@@ -666,12 +782,12 @@
             </div>
           </div>
           <div class="toolbar">
-            ${selectedCount > 0 ? `<div class="count">선택된 대화: ${selectedCount} / 127</div>` : ''}
+            ${selectedCount > 0
+              ? `<div class="count">${canProceed ? '✓ ' : ''}선택된 대화: ${selectedCount}개${!canProceed ? ` · ${3 - selectedCount}개 더 선택해 주세요` : ''}</div>`
+              : '<div class="count" style="color:var(--muted);">폴더를 눌러 내용을 확인하세요</div>'}
           </div>
-          <p class="system-note">폴더를 눌러 내용을 확인하세요. 이 단계에서는 사용자가 직접 내용을 살펴보며 어떤 맥락을 옮길지 판단합니다.</p>
-          <div class="warning">선택하지 않은 대화는 새로운 AI가 참고할 수 없습니다. 필요한 맥락을 놓치지 않으려면 여러 폴더를 직접 확인해야 합니다.</div>
           <div class="btn-stack">
-            <button class="btn-primary" data-action="c-upload-screen" ${selectedCount === 0 ? 'disabled' : ''}>선택한 대화만 Claude에 업로드하기</button>
+            <button class="btn-primary" data-action="c-upload-screen" ${!canProceed ? 'disabled' : ''}>선택한 대화만 Claude에 업로드하기</button>
           </div>
         </div>
       `;
@@ -786,7 +902,6 @@
             <h1 class="title">잘 하셨어요! 다음 방식을 체험할 차례예요.</h1>
             <p class="subtitle">${currentDone}번째 방식 체험이 완료되었습니다. 설문 응답을 마치셨으면 아래 버튼을 눌러 다음 방식을 체험해 주세요.</p>
           </div>
-          <div class="research-note">각 이식 방식은 같은 기능적/관계적 데이터를 옮기더라도, 사용자가 느끼는 '관계적 연속성'과 '시스템 신뢰도'가 어떻게 달라지는지 검증하기 위해 의도적으로 다르게 설계되었습니다.</div>
           <div class="interstitial-progress">${marks}</div>
           <div class="btn-stack">
             <button class="btn-primary" data-action="start-next-condition">다음 방식 체험하기 →</button>
@@ -802,16 +917,17 @@
           <div>
             <h1 class="title">모든 체험이 완료되었습니다 :)</h1>
             <div class="interstitial-progress">✓ 방식 1&nbsp;&nbsp;✓ 방식 2&nbsp;&nbsp;✓ 방식 3</div>
-            <p class="subtitle">세 가지 방식을 모두 체험하셨습니다. 설문으로 돌아가서 마지막 질문들에 응답해 주세요.</p>
+            <p class="subtitle">세 가지 방식을 모두 체험해 주셨습니다.\n바쁜 시간 내어 참여해 주셔서 진심으로 감사드립니다.</p>
           </div>
-          <div class="research-note">이제 방금 체험하신 세 가지 각 방식에 대해, 기존 맥락이 얼마나 이어졌다고 느꼈는지(관계적 연속성), 새 AI를 얼마나 믿을 수 있었는지(시스템 신뢰도), 그리고 다시 적응시키는 데 어떤 노력이 들었는지(재설정 노력)를 본 설문지에서 응답해 주세요.</div>
-          <div class="btn-stack">
-            <button class="btn-primary" type="button">설문 마무리하러 가기 →</button>
+          <div class="card">
+            <p class="subtitle" style="margin:0;">설문지로 돌아가서 마지막 질문들에 응답해 주시면 연구 참여가 완료됩니다. 솔직한 응답이 연구에 큰 도움이 됩니다.</p>
           </div>
+          <p class="system-note" style="text-align:center;">연구자 임동하 · 홍익대학교 일반대학원 시각디자인학과</p>
         </div>
       `;
     }
 
+    // Render entry point
     function getScreenMarkup() {
       if (state.phase === 'start') return renderStart();
       if (state.phase === 'scenario') return renderScenario();
@@ -845,10 +961,9 @@
 
     function render() {
       const screenKey = `${state.phase}-${getCurrentCondition() || 'none'}-${state.conditionPhase}`;
-      const terminalMode = state.phase === 'condition' && getCurrentCondition() === 'A' && state.conditionPhase === 3;
 
       app.innerHTML = `
-        <div class="screen-shell ${terminalMode ? 'terminal-shell' : ''}">
+        <div class="screen-shell">
           ${getScreenMarkup()}
         </div>
       `;
@@ -861,6 +976,7 @@
       initConditionIfNeeded(screenKey);
     }
 
+    // User interactions
     app.addEventListener('click', (event) => {
       const target = event.target.closest('[data-action]');
       if (!target) return;
@@ -910,6 +1026,17 @@
         return;
       }
 
+      if (action === 'b-do-upload') {
+        state.b.uploadPhase = 'uploading';
+        render();
+        schedule(() => {
+          state.b.uploadPhase = 'idle';
+          state.conditionPhase = 3;
+          render();
+        }, 2500);
+        return;
+      }
+
       if (action === 'b-begin-review') {
         state.conditionPhase = 3;
         render();
@@ -930,9 +1057,6 @@
 
       if (action === 'b-complete-selection') {
         state.conditionPhase = 6;
-        state.b.messages = ['어떤 내용을 빼드릴까요?'];
-        state.b.typing = false;
-        render();
         queueClaudeMessages([
           '확인했어요! 선택하신 내용으로 이식할게요.',
           '완료됐어요! 이제 선택하신 내용만 반영해서 도와드릴게요 😊'

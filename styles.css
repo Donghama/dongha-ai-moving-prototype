@@ -1,3 +1,4 @@
+/* Design Tokens */
     :root {
       --bg: #f7f5f2;
       --panel: #fcfbf8;
@@ -15,6 +16,7 @@
       --danger-text: #6C5A4F;
     }
 
+/* Base Layout */
     * {
       box-sizing: border-box;
     }
@@ -70,6 +72,7 @@
       justify-content: center;
     }
 
+/* Shared Components */
     .logo {
       font-size: 28px;
       font-weight: 800;
@@ -302,6 +305,7 @@
       padding: 4px 2px;
     }
 
+/* Condition A */
     .terminal-shell {
       min-height: 100vh;
       background: var(--terminal-bg);
@@ -384,6 +388,7 @@
       transition: width 0.35s ease;
     }
 
+/* Condition B */
     .chat-screen {
       background: linear-gradient(180deg, #fbfaf8 0%, #f6f2ec 100%);
     }
@@ -475,6 +480,7 @@
       accent-color: var(--primary);
     }
 
+/* Condition C */
     .file-explorer {
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
       font-size: 13px;
@@ -687,6 +693,182 @@
       letter-spacing: -0.01em;
     }
 
+/* AI-to-AI Chat (Condition A) */
+    .ai-chat-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 4px 2px;
+    }
+
+    .ai-label {
+      font-size: 12px;
+      font-weight: 700;
+      padding: 5px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+    }
+
+    .gpt-label {
+      color: #0e7c5b;
+      border-color: #9fd4c2;
+      background: #f0faf7;
+    }
+
+    .claude-label {
+      color: var(--primary);
+      border-color: var(--primary);
+      background: #f7f2eb;
+    }
+
+    .ai-arrow {
+      color: var(--muted);
+      font-size: 16px;
+    }
+
+    .chat-row-right {
+      flex-direction: row-reverse;
+    }
+
+    .ai-gpt-bubble {
+      background: #f0faf7;
+      border-color: #b8ddd2;
+      border-radius: 18px 18px 6px 18px;
+    }
+
+    .ai-claude-bubble {
+      background: var(--card-bg);
+      border-radius: 18px 18px 18px 6px;
+    }
+
+    .avatar-gpt {
+      background: #10A37F !important;
+    }
+
+/* Modal / Bottom Sheet */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(44, 26, 14, 0.55);
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      z-index: 100;
+      animation: fadeIn 0.2s ease;
+    }
+
+    .modal-sheet {
+      background: var(--bg);
+      border-radius: 22px 22px 0 0;
+      padding: 28px 22px 40px;
+      width: 100%;
+      max-width: 480px;
+      animation: slideUp 0.35s ease;
+    }
+
+    .modal-eyebrow {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--mid-brown);
+      letter-spacing: 0.05em;
+      margin-bottom: 8px;
+    }
+
+    .modal-title {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      margin: 0 0 8px;
+    }
+
+    .modal-desc {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.6;
+      margin: 0 0 16px;
+    }
+
+    .modal-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px 16px;
+      margin-bottom: 16px;
+    }
+
+    .modal-item {
+      font-size: 14px;
+      line-height: 1.5;
+      color: var(--primary);
+    }
+
+/* File Upload Card (Condition B) */
+    .upload-file-card {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 16px;
+    }
+
+    .upload-file-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .upload-file-icon {
+      font-size: 28px;
+      flex-shrink: 0;
+    }
+
+    .upload-file-info {
+      flex: 1;
+    }
+
+    .upload-file-name {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    .upload-file-size {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .upload-progress-wrap {
+      margin-top: 12px;
+    }
+
+    .upload-progress-bar {
+      height: 4px;
+      background: var(--beige);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .upload-progress-fill {
+      height: 100%;
+      background: var(--primary);
+      border-radius: 999px;
+      width: 0%;
+      animation: progressFill 2.5s ease forwards;
+    }
+
+    .upload-status-text {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 6px;
+    }
+
+/* Motion */
     @keyframes blink {
       0%, 100% { opacity: 0.2; }
       50% { opacity: 1; }
@@ -696,6 +878,17 @@
       to { opacity: 1; }
     }
 
+    @keyframes slideUp {
+      from { transform: translateY(30px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    @keyframes progressFill {
+      from { width: 0%; }
+      to { width: 100%; }
+    }
+
+/* Responsive */
     @media (max-width: 380px) {
       .title {
         font-size: 26px;
