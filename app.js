@@ -199,62 +199,31 @@
     }
 
     function runAiChatSequence() {
-      state.a.chatMessages = [];
+      // All messages rendered at once — CSS handles the stagger animation
+      state.a.chatMessages = [...aiConversationMessages];
       state.a.chatTypingFrom = null;
       state.a.showPopup = false;
-      state.a.ready = false;
       render();
 
-      let offset = 400;
-      aiConversationMessages.forEach((msg) => {
-        schedule(() => {
-          state.a.chatTypingFrom = msg.from;
-          render();
-          const chatList = document.getElementById('ai-chat-list');
-          if (chatList) chatList.scrollTop = chatList.scrollHeight;
-        }, offset);
-        const typingDuration = msg.text.length > 30 ? 1300 : 800;
-        offset += typingDuration;
-        schedule(() => {
-          state.a.chatTypingFrom = null;
-          state.a.chatMessages.push(msg);
-          render();
-          const chatList = document.getElementById('ai-chat-list');
-          if (chatList) chatList.scrollTop = chatList.scrollHeight;
-        }, offset);
-        offset += 400;
-      });
-
+      // Show popup after all messages have faded in (1 render total)
+      const popupDelay = aiConversationMessages.length * 400 + 600;
       schedule(() => {
         state.a.showPopup = true;
         render();
-      }, offset + 600);
+      }, popupDelay);
     }
 
     function queueClaudeMessages(messages, options = {}) {
       const { initialDelay = 0, done } = options;
-      let offset = initialDelay;
-
-      messages.forEach((message) => {
-        schedule(() => {
-          state.b.typing = true;
-          render();
-        }, offset);
-
-        offset += 1000;
-
-        schedule(() => {
-          state.b.typing = false;
-          state.b.messages.push(message);
-          render();
-        }, offset);
-
-        offset += 800;
-      });
-
-      if (done) {
-        schedule(done, offset);
-      }
+      // All messages added at once — CSS handles the stagger
+      schedule(() => {
+        messages.forEach((msg) => state.b.messages.push(msg));
+        state.b.typing = false;
+        render();
+        if (done) {
+          schedule(done, messages.length * 400 + 200);
+        }
+      }, initialDelay || 0);
     }
 
     function initConditionIfNeeded(screenKey) {
@@ -302,8 +271,7 @@
       return `
         <div class="screen centered">
           <div class="app-topbar"><span class="app-brand">Claude</span><span>연구 프로토타입</span></div>
-          <div class="logo">BAIGE</div>
-          <div class="tag-row">
+<div class="tag-row">
             <div class="tag">홍익대학교 일반대학원 시각디자인학과</div>
             <div class="tag">연구자 임동하</div>
           </div>
@@ -444,17 +412,18 @@
       const gptAvatar = `<div class="avatar avatar-gpt">G</div>`;
       const claudeAvatar = `<div class="avatar">C</div>`;
 
-      const messagesHtml = state.a.chatMessages.map((msg) => {
+      const messagesHtml = state.a.chatMessages.map((msg, i) => {
+        const delay = `animation-delay:${(i * 0.38).toFixed(2)}s`;
         if (msg.from === 'gpt') {
           return `
-            <div class="chat-row">
+            <div class="chat-row msg-anim" style="${delay}">
               ${gptAvatar}
               <div class="chat-bubble ai-gpt-bubble">${escapeHtml(msg.text)}</div>
             </div>
           `;
         } else {
           return `
-            <div class="chat-row chat-row-right">
+            <div class="chat-row chat-row-right msg-anim" style="${delay}">
               <div class="chat-bubble ai-claude-bubble">${escapeHtml(msg.text)}</div>
               ${claudeAvatar}
             </div>
@@ -462,19 +431,10 @@
         }
       }).join('');
 
-      const typingHtml = state.a.chatTypingFrom ? (() => {
-        const isGpt = state.a.chatTypingFrom === 'gpt';
-        const bubble = `<div class="chat-bubble typing-bubble"><div class="typing-dots"><span></span><span></span><span></span></div></div>`;
-        if (isGpt) {
-          return `<div class="chat-row">${gptAvatar}${bubble}</div>`;
-        } else {
-          return `<div class="chat-row chat-row-right">${bubble}${claudeAvatar}</div>`;
-        }
-      })() : '';
-
       const popupHtml = state.a.showPopup ? `
         <div class="modal-overlay">
           <div class="modal-sheet">
+            <div class="modal-handle"></div>
             <div class="modal-eyebrow">자동 이식 완료</div>
             <h2 class="modal-title">이런 내용이 전달되었습니다</h2>
             <p class="modal-desc">AI 간에만 공유된 내용으로, 평소에는 화면에 표시되지 않습니다.</p>
@@ -506,7 +466,6 @@
           <p class="chat-section-note">두 AI가 사용자의 맥락을 주고받고 있습니다. 이 대화는 평소에는 사용자에게 보이지 않습니다.</p>
           <div class="chat-list" id="ai-chat-list" style="max-height:55vh; overflow-y:auto;">
             ${messagesHtml}
-            ${typingHtml}
           </div>
           ${popupHtml}
         </div>
@@ -541,25 +500,12 @@
 
     // Condition B
     function renderChatMessages() {
-      const messages = state.b.messages.map((message) => `
-        <div class="chat-row">
+      return state.b.messages.map((message, i) => `
+        <div class="chat-row msg-anim" style="animation-delay:${(i * 0.35).toFixed(2)}s">
           <div class="avatar">C</div>
           <div class="chat-bubble">${escapeHtml(message)}</div>
         </div>
       `).join('');
-
-      const typing = state.b.typing ? `
-        <div class="chat-row">
-          <div class="avatar">C</div>
-          <div class="chat-bubble typing-bubble">
-            <div class="typing-dots">
-              <span></span><span></span><span></span>
-            </div>
-          </div>
-        </div>
-      ` : '';
-
-      return messages + typing;
     }
 
     function renderConditionB2() {
@@ -635,7 +581,7 @@
           <div class="chat-list">${renderChatMessages()}</div>
           <div class="recall-note">이 방식에서는 새로운 AI가 먼저 정리안을 보여주고, 그 뒤에 사용자가 승인했습니다. 설문에서는 이 확인 과정이 얼마나 신뢰감을 주었는지 떠올려 주세요.</div>
           <div class="btn-stack">
-            ${state.b.messages.length >= 2 && !state.b.typing ? '<button class="btn-primary" data-action="finish-condition">설문으로 돌아가서 응답하기 →</button>' : ''}
+            ${state.b.messages.length >= 2 ? '<button class="btn-primary" data-action="finish-condition">설문으로 돌아가서 응답하기 →</button>' : ''}
           </div>
         </div>
       `;
@@ -680,7 +626,7 @@
           <div class="chat-list">${renderChatMessages()}</div>
           <div class="recall-note">이 방식에서는 어떤 맥락을 옮길지 직접 조정할 수 있었습니다. 설문에서는 이 통제감이 어떤 느낌을 만들었는지 떠올려 주세요.</div>
           <div class="btn-stack">
-            ${state.b.messages.length >= 3 && !state.b.typing ? '<button class="btn-primary" data-action="finish-condition">설문으로 돌아가서 응답하기 →</button>' : ''}
+            ${state.b.messages.length >= 3 ? '<button class="btn-primary" data-action="finish-condition">설문으로 돌아가서 응답하기 →</button>' : ''}
           </div>
         </div>
       `;
@@ -774,7 +720,7 @@
               <h2 class="explorer-title">📁 chatgpt_export_2024.zip</h2>
               <p class="explorer-subtitle">파일 127개</p>
             </div>
-            <div style="padding:16px 16px 0;">
+            <div style="padding:12px 14px 0;">
               <div class="warning">⚠ 폴더 이름은 대화 ID로만 표시됩니다. 내용을 확인하려면 직접 열어봐야 합니다.</div>
             </div>
             <div class="file-list">
