@@ -966,6 +966,305 @@ textarea:focus {
   to { opacity: 1; }
 }
 
+/* ─── Condition A: Simulated ChatGPT UI ─────────────── */
+.sim-sheet {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-xl);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.sim-menu-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border);
+  font-size: 15px;
+  color: var(--text-primary);
+  cursor: default;
+}
+
+.sim-menu-row-last { border-bottom: 0; }
+
+.sim-chevron { color: var(--text-faint); font-size: 16px; }
+
+.sim-row-active {
+  background: var(--surface-3);
+  font-weight: 600;
+  border-left: 3px solid var(--text-primary);
+  padding-left: 15px;
+}
+
+.sim-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.sim-tabs::-webkit-scrollbar { display: none; }
+
+.sim-tab {
+  flex-shrink: 0;
+  padding: 11px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-muted);
+  cursor: default;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+}
+
+.sim-tab-active {
+  color: var(--text-primary);
+  font-weight: 600;
+  border-bottom-color: var(--text-primary);
+}
+
+.sim-setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border);
+}
+
+.sim-setting-row:last-child { border-bottom: 0; }
+
+.sim-setting-row-active { background: var(--warn-bg); }
+
+.sim-setting-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.sim-setting-desc {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 2px;
+  line-height: 1.5;
+}
+
+.sim-setting-value {
+  font-size: 13px;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.sim-btn {
+  flex-shrink: 0;
+  padding: 6px 14px;
+  border-radius: var(--r-sm);
+  border: 1.5px solid var(--border-mid);
+  background: var(--surface);
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: default;
+}
+
+.sim-btn-danger {
+  color: #C0392B;
+  border-color: #F5C6C2;
+  background: #FFF5F5;
+}
+
+.sim-email-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 18px;
+}
+
+.sim-email-icon { font-size: 28px; flex-shrink: 0; }
+
+.sim-email-addr {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 6px;
+}
+
+.sim-email-body {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+/* ─── Condition A: Download Progress ────────────────── */
+.dl-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 18px;
+}
+
+.dl-icon { font-size: 28px; flex-shrink: 0; line-height: 1.2; }
+
+.dl-info { flex: 1; }
+
+.dl-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+
+.dl-size {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 6px;
+}
+
+.dl-progress-wrap { margin-top: 4px; }
+
+.dl-progress-bar {
+  height: 4px;
+  background: var(--beige);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.dl-progress-fill {
+  height: 100%;
+  background: var(--text-primary);
+  border-radius: 999px;
+  animation: progressFill 2s cubic-bezier(0.4, 0, 0.6, 1) forwards;
+}
+
+.dl-files {
+  border-top: 1px solid var(--border);
+  padding: 0 18px 4px;
+}
+
+.dl-file-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 9px 0;
+  border-bottom: 1px solid rgba(60, 40, 25, 0.06);
+  font-size: 13px;
+  color: var(--text-primary);
+}
+
+.dl-file-row:last-child { border-bottom: 0; }
+
+.dl-file-size {
+  font-size: 12px;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+/* ─── Condition A: File Select ───────────────────────── */
+.file-select-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 16px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  transition: background 0.12s ease;
+}
+
+.file-select-row:last-child { border-bottom: 0; }
+.file-select-row:hover:not(.file-sel-disabled) { background: var(--surface-2); }
+
+.file-sel-checked { background: var(--surface-3); }
+
+.file-sel-disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.file-select-row input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  accent-color: var(--text-primary);
+  cursor: pointer;
+}
+
+.file-sel-info { flex: 1; min-width: 0; }
+
+.file-sel-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.file-sel-note {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.file-sel-size {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
+.size-over { color: #C0392B; }
+
+/* ─── Condition A: Chat Input Preview ────────────────── */
+.chat-input-preview {
+  background: var(--surface);
+  border: 1.5px solid var(--border-mid);
+  border-radius: var(--r-xl);
+  padding: 14px 16px;
+  box-shadow: var(--shadow-sm);
+}
+
+.attached-files {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.attached-file {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 10px;
+  background: var(--surface-3);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.chat-input-text {
+  font-size: 15px;
+  color: var(--text-primary);
+  line-height: 1.5;
+  padding-top: 4px;
+}
+
+/* ─── Condition A: User bubble ───────────────────────── */
+.user-bubble {
+  background: var(--text-primary);
+  color: #fff;
+  border-radius: 18px 18px 4px 18px;
+}
+
+.avatar-user {
+  background: var(--beige);
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 700;
+}
+
 /* ─── Responsive ─────────────────────────────────────── */
 @media (max-width: 380px) {
   .title { font-size: 24px; }

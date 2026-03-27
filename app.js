@@ -35,6 +35,21 @@ const CLAUDE_INTRO = [
   '이 내용들을 그대로 이식할까요? 혹시 제외하고 싶은 부분이 있으면 직접 조정하셔도 괜찮아요. 😊'
 ];
 
+const A_EXPORT_FILES = [
+  { id: 'conv',     name: 'conversations.json',       size: '87.3 MB', note: '전체 대화 내역 · 127개' },
+  { id: 'user',     name: 'user.json',                 size: '0.1 MB',  note: '프로필·설정 정보' },
+  { id: 'feedback', name: 'message_feedback.json',     size: '2.1 MB',  note: '메시지 피드백 내역' },
+  { id: 'shared',   name: 'shared_conversations.json', size: '0.8 MB',  note: '공유한 대화 목록' }
+];
+
+const A_LEARN_CHAT = [
+  '파일을 받았어요. 지금 분석을 시작할게요.',
+  '대화 127개를 확인했어요. 기획·글쓰기·UX 관련 주제가 많네요.',
+  '"정리해줘", "요약해줘" 같은 표현을 자주 쓰시고, 구조화된 목록 형식을 선호하시더라고요.',
+  '대화 어조는 격식체를 선호하시고, 커리어·방향성 고민을 자주 꺼내시는 편이에요.',
+  '이 내용들을 전부 학습했어요. 앞으로 이 맥락을 바탕으로 대화할게요 😊'
+];
+
 const FOLDERS = [
   {
     id: '1a2f8c94e3b7d291...',
@@ -91,8 +106,10 @@ const state = {
   lastScreenKey: '',
   timers: [],
   a: {
-    chatMessages: [],
-    showPopup: false
+    downloadPhase: 'idle',  // 'idle' | 'downloading' | 'done'
+    selectedFiles: [],
+    learnMessages: [],
+    learnDone: false
   },
   b: {
     messages: [],
@@ -157,8 +174,10 @@ function topbar(label) {
 
 function resetCondition(letter) {
   if (letter === 'A') {
-    state.a.chatMessages = [];
-    state.a.showPopup = false;
+    state.a.downloadPhase = 'idle';
+    state.a.selectedFiles = [];
+    state.a.learnMessages = [];
+    state.a.learnDone = false;
   }
   if (letter === 'B') {
     state.b.messages = [];
@@ -198,11 +217,11 @@ function showMessages(messages, onDone) {
   if (onDone) schedule(onDone, messages.length * 700 + 300);
 }
 
-function startAiChat() {
-  state.a.chatMessages = [...AI_CHAT];
-  state.a.showPopup = false;
+function startLearnChat() {
+  state.a.learnMessages = [...A_LEARN_CHAT];
+  state.a.learnDone = false;
   render();
-  schedule(() => { state.a.showPopup = true; render(); }, AI_CHAT.length * 750 + 800);
+  schedule(() => { state.a.learnDone = true; render(); }, A_LEARN_CHAT.length * 750 + 800);
 }
 
 // ─── Screen Init (runs once per screen key) ───────────────────────────────────
@@ -212,8 +231,8 @@ function initScreen(key) {
   state.lastScreenKey = key;
   clearTimers();
 
-  if (key === 'condition-A-3') {
-    startAiChat();
+  if (key === 'condition-A-8') {
+    startLearnChat();
   }
   if (key === 'condition-B-3') {
     state.b.messages = [];
@@ -237,7 +256,7 @@ function chatBubbles() {
     </div>`).join('');
 }
 
-const A_STEPS = ['1. 기존 AI에서 내보내기', '2. 새로운 AI로 옮기기', '3. AI끼리 자동 정리'];
+const A_STEPS = ['1. ChatGPT에서 내보내기', '2. 파일 선택·업로드', '3. 학습 완료'];
 const B_STEPS = ['1. 기존 AI에서 내보내기', '2. 새로운 AI로 옮기기', '3. AI가 제안 후 확인'];
 const C_STEPS = ['1. 기존 AI에서 내보내기', '2. 옮길 내용 직접 보기', '3. 새로운 AI로 옮기기'];
 
@@ -326,85 +345,235 @@ function screenConditionIntro(letter) {
 
 function screenA2() {
   return `<div class="screen">
-    ${topbar('자동 이식')}
+    ${topbar('데이터 내보내기')}
     ${progressHeader()}
-    ${stepStrip(A_STEPS, 1)}
+    ${stepStrip(A_STEPS, 0)}
     <div class="card">
-      <h2 class="explorer-title">기존 AI 데이터 패키지</h2>
-      <p class="subtitle">기존 AI에서 내보낸 사용자 맥락 데이터가 새로운 AI로 전달됩니다. 별도의 확인 없이 자동으로 다음 단계로 이어집니다.</p>
+      <p class="eyebrow">STEP 1 · ChatGPT 설정 열기</p>
+      <h2 class="explorer-title">프로필에서 설정을 열어주세요</h2>
+      <p class="subtitle">ChatGPT 화면 하단 프로필을 누른 뒤 설정 메뉴로 이동합니다.</p>
     </div>
-    <div class="card">
-      <div class="plain-list">
-        <div class="plain-item">✓ 기능적 맥락 3개 포함</div>
-        <div class="plain-item">✓ 관계적 맥락 3개 포함</div>
-        <div class="plain-item">✓ 새 AI 작업 공간으로 자동 전송 준비 완료</div>
-      </div>
+    <div class="sim-sheet">
+      <div class="sim-menu-row"><span>개인 맞춤 설정</span><span class="sim-chevron">›</span></div>
+      <div class="sim-menu-row"><span>프로필</span><span class="sim-chevron">›</span></div>
+      <div class="sim-menu-row sim-row-active"><span>⚙ 설정</span><span class="sim-chevron">›</span></div>
+      <div class="sim-menu-row"><span>도움말</span><span class="sim-chevron">›</span></div>
+      <div class="sim-menu-row sim-menu-row-last"><span>로그아웃</span><span></span></div>
     </div>
     <div class="btn-stack">
-      <button class="btn-primary" data-action="a-begin-auto">새로운 AI에 데이터 옮기기 →</button>
+      <button class="btn-primary" data-action="a-settings">설정 열기 →</button>
     </div>
   </div>`;
 }
 
 function screenA3() {
-  const gptAvatar    = `<div class="avatar avatar-gpt">G</div>`;
-  const claudeAvatar = `<div class="avatar">C</div>`;
+  return `<div class="screen">
+    ${topbar('데이터 내보내기')}
+    ${progressHeader()}
+    ${stepStrip(A_STEPS, 0)}
+    <div class="card">
+      <p class="eyebrow">STEP 2 · 데이터 제어</p>
+      <h2 class="explorer-title">데이터 내보내기를 눌러주세요</h2>
+      <p class="subtitle">설정 → 데이터 제어 탭에서 전체 대화 데이터를 내보낼 수 있습니다.</p>
+    </div>
+    <div class="sim-sheet">
+      <div class="sim-tabs">
+        <div class="sim-tab">일반</div>
+        <div class="sim-tab">알림</div>
+        <div class="sim-tab sim-tab-active">데이터 제어</div>
+        <div class="sim-tab">보안</div>
+      </div>
+      <div class="sim-setting-row">
+        <div class="sim-setting-label">모두를 위한 모델 개선</div>
+        <div class="sim-setting-value">켜짐 ›</div>
+      </div>
+      <div class="sim-setting-row sim-setting-row-active">
+        <div>
+          <div class="sim-setting-label">데이터 내보내기</div>
+          <div class="sim-setting-desc">전체 대화 내역을 ZIP 파일로 받습니다</div>
+        </div>
+        <button class="sim-btn">내보내기</button>
+      </div>
+      <div class="sim-setting-row">
+        <div class="sim-setting-label">모든 채팅 삭제하기</div>
+        <button class="sim-btn sim-btn-danger">모두 삭제</button>
+      </div>
+    </div>
+    <div class="btn-stack">
+      <button class="btn-primary" data-action="a-export-data">데이터 내보내기 →</button>
+    </div>
+  </div>`;
+}
 
-  const messages = state.a.chatMessages.map((msg, i) => {
-    const delay = `animation-delay:${(i * 0.75).toFixed(2)}s`;
-    return msg.from === 'gpt'
-      ? `<div class="chat-row msg-anim" style="${delay}">${gptAvatar}<div class="chat-bubble ai-gpt-bubble">${esc(msg.text)}</div></div>`
-      : `<div class="chat-row chat-row-right msg-anim" style="${delay}"><div class="chat-bubble ai-claude-bubble">${esc(msg.text)}</div>${claudeAvatar}</div>`;
-  }).join('');
+function screenA4() {
+  return `<div class="screen">
+    ${topbar('데이터 내보내기')}
+    ${progressHeader()}
+    ${stepStrip(A_STEPS, 0)}
+    <div class="card">
+      <p class="eyebrow">STEP 3 · 이메일 확인</p>
+      <h2 class="explorer-title">이메일로 링크를 발송했습니다</h2>
+    </div>
+    <div class="sim-sheet">
+      <div class="sim-email-row">
+        <div class="sim-email-icon">✉️</div>
+        <div>
+          <div class="sim-email-addr">donghalim@gmail.com</div>
+          <div class="sim-email-body">ChatGPT 데이터 내보내기 링크를 보내드렸습니다. 링크를 클릭하면 다운로드가 시작됩니다.</div>
+        </div>
+      </div>
+    </div>
+    <div class="warning">💡 실제로는 이메일에서 인증 버튼을 클릭해야 다운로드 링크가 활성화됩니다. 이 실험에서는 해당 인증 과정을 생략합니다.</div>
+    <div class="btn-stack">
+      <button class="btn-primary" data-action="a-download-link">다운로드 링크 열기 →</button>
+    </div>
+  </div>`;
+}
 
-  const popup = state.a.showPopup ? `
+function screenA5() {
+  const done = state.a.downloadPhase === 'done';
+  return `<div class="screen">
+    ${topbar('다운로드')}
+    ${progressHeader()}
+    ${stepStrip(A_STEPS, 0)}
+    <div class="card">
+      <p class="eyebrow">STEP 4 · 파일 다운로드</p>
+      <h2 class="explorer-title">${done ? '다운로드 완료' : '다운로드 중...'}</h2>
+    </div>
+    <div class="sim-sheet">
+      <div class="dl-row">
+        <div class="dl-icon">${done ? '✅' : '📦'}</div>
+        <div class="dl-info">
+          <div class="dl-name">chatgpt_export_20241205.zip</div>
+          ${done
+            ? `<div class="dl-size">91.3 MB · 다운로드 완료</div>`
+            : `<div class="dl-progress-wrap"><div class="dl-progress-bar"><div class="dl-progress-fill"></div></div></div>
+               <div class="dl-size">다운로드 중...</div>`}
+        </div>
+      </div>
+      ${done ? `
+        <div class="dl-files">
+          <div class="dl-file-row"><span>📄 conversations.json</span><span class="dl-file-size">87.3 MB</span></div>
+          <div class="dl-file-row"><span>👤 user.json</span><span class="dl-file-size">0.1 MB</span></div>
+          <div class="dl-file-row"><span>📊 message_feedback.json</span><span class="dl-file-size">2.1 MB</span></div>
+          <div class="dl-file-row"><span>🔗 shared_conversations.json</span><span class="dl-file-size">0.8 MB</span></div>
+        </div>` : ''}
+    </div>
+    ${done ? `
+      <div class="btn-stack">
+        <button class="btn-primary" data-action="a-to-file-select">Claude에 파일 올리기 →</button>
+      </div>` : ''}
+  </div>`;
+}
+
+function screenA6() {
+  const canUpload = state.a.selectedFiles.length > 0;
+  return `<div class="screen">
+    ${topbar('파일 업로드')}
+    ${progressHeader()}
+    ${stepStrip(A_STEPS, 1)}
+    <div class="card">
+      <p class="eyebrow">STEP 5 · Claude에 파일 선택</p>
+      <h2 class="explorer-title">업로드할 파일을 골라주세요</h2>
+      <p class="subtitle">다운로드한 ZIP 파일에서 Claude에 업로드할 파일을 선택합니다.</p>
+    </div>
+    <div class="warning">⚠ 파일 당 최대 100MB까지 업로드 가능합니다 (문서·이미지 기준). 용량이 큰 파일은 주의하세요.</div>
+    <div class="sim-sheet">
+      ${A_EXPORT_FILES.map(f => {
+        const sizeMB = parseFloat(f.size);
+        const over = sizeMB > 100;
+        const sel = state.a.selectedFiles.includes(f.id);
+        return `<label class="file-select-row${sel ? ' file-sel-checked' : ''}${over ? ' file-sel-disabled' : ''}">
+          <input type="checkbox" data-file="${f.id}" ${sel ? 'checked' : ''} ${over ? 'disabled' : ''} />
+          <div class="file-sel-info">
+            <div class="file-sel-name">📄 ${f.name}</div>
+            <div class="file-sel-note">${f.note}</div>
+          </div>
+          <div class="file-sel-size${over ? ' size-over' : ''}">${f.size}</div>
+        </label>`;
+      }).join('')}
+    </div>
+    <div class="btn-stack">
+      <button class="btn-primary" data-action="a-upload-files" ${!canUpload ? 'disabled' : ''}>선택한 파일 업로드하기 →</button>
+    </div>
+  </div>`;
+}
+
+function screenA7() {
+  const names = A_EXPORT_FILES
+    .filter(f => state.a.selectedFiles.includes(f.id))
+    .map(f => f.name);
+  return `<div class="screen chat-screen">
+    ${topbar('Claude')}
+    ${progressHeader()}
+    ${stepStrip(A_STEPS, 1)}
+    <div class="card">
+      <p class="eyebrow">STEP 6 · 학습 요청</p>
+      <p class="subtitle">아래 메시지를 전송하면 Claude가 파일을 읽고 학습합니다.</p>
+    </div>
+    <div class="chat-input-preview">
+      <div class="attached-files">
+        ${names.map(n => `<div class="attached-file">📎 ${esc(n)}</div>`).join('')}
+      </div>
+      <div class="chat-input-text">이 파일을 전부 학습해줘.</div>
+    </div>
+    <div class="btn-stack">
+      <button class="btn-primary" data-action="a-send-learn">전송하기 →</button>
+    </div>
+  </div>`;
+}
+
+function screenA8() {
+  const messages = state.a.learnMessages.map((msg, i) => `
+    <div class="chat-row msg-anim" style="animation-delay:${(i * 0.75).toFixed(2)}s">
+      <div class="avatar">C</div>
+      <div class="chat-bubble">${esc(msg)}</div>
+    </div>`).join('');
+
+  const popup = state.a.learnDone ? `
     <div class="modal-overlay">
       <div class="modal-sheet">
         <div class="modal-handle"></div>
-        <div class="modal-eyebrow">자동 이식 완료</div>
-        <h2 class="modal-title">이런 내용이 전달되었습니다</h2>
-        <p class="modal-desc">AI 간에만 공유된 내용으로, 평소에는 화면에 표시되지 않습니다.</p>
+        <div class="modal-eyebrow">학습 완료</div>
+        <h2 class="modal-title">이런 내용이 학습되었습니다</h2>
+        <p class="modal-desc">업로드한 파일을 바탕으로 Claude가 아래 맥락을 파악했습니다.</p>
         <div class="modal-list">
-          <div class="modal-item">📌 자주 다루는 업무·학습 주제</div>
-          <div class="modal-item">📌 선호하는 응답 형식 및 어휘 패턴</div>
-          <div class="modal-item">📌 말투·어조·이모지 사용 성향</div>
-          <div class="modal-item">📌 사고 패턴 및 의사결정 스타일</div>
-          <div class="modal-item">📌 감정 흐름 및 고민의 주제</div>
+          ${TRANSFER_ITEMS.map(item => `<div class="modal-item">📌 ${item}</div>`).join('')}
         </div>
         <button class="btn-primary" data-action="a-complete">확인하고 다음으로 →</button>
       </div>
     </div>` : '';
 
   return `<div class="screen chat-screen">
-    ${topbar('AI 간 데이터 전달')}
+    ${topbar('Claude')}
     ${progressHeader()}
     ${stepStrip(A_STEPS, 2)}
-    <div class="ai-chat-header">
-      <span class="ai-label gpt-label">ChatGPT</span>
-      <span class="ai-arrow">→</span>
-      <span class="ai-label claude-label">Claude</span>
+    <div class="chat-list">
+      <div class="chat-row chat-row-right msg-anim" style="animation-delay:0s">
+        <div class="chat-bubble user-bubble">이 파일을 전부 학습해줘.</div>
+        <div class="avatar avatar-user">나</div>
+      </div>
+      ${messages}
     </div>
-    <p class="chat-section-note">두 AI가 사용자의 맥락을 주고받고 있습니다. 이 대화는 평소에는 사용자에게 보이지 않습니다.</p>
-    <div class="chat-list" style="max-height:55vh;overflow-y:auto;">${messages}</div>
     ${popup}
   </div>`;
 }
 
-function screenA4() {
+function screenA9() {
   return `<div class="screen">
     ${topbar('이식 요약')}
     ${progressHeader()}
     ${stepStrip(A_STEPS, 2)}
     <div>
-      <h1 class="title">자동 이식 요약</h1>
-      <p class="system-note">AI 간 자동 정리를 거쳐 총 6개 항목이 새로운 AI에 반영되었습니다.</p>
+      <h1 class="title">이식 요약</h1>
+      <p class="system-note">ChatGPT에서 내보낸 파일을 Claude에 직접 업로드해 학습시키는 방식으로, 총 6개 항목이 새로운 AI에 반영되었습니다.</p>
     </div>
     <div class="card completion-list">
       <div class="plain-list">
         ${TRANSFER_ITEMS.map(item => `<div class="plain-item">✓ ${item}</div>`).join('')}
       </div>
     </div>
-    <div class="recall-note">이 방식에서는 무엇이 옮겨졌는지 결과 요약만 확인할 수 있었습니다. 설문에서는 이 점이 연속감과 신뢰에 어떤 영향을 주었는지 떠올려 주세요.</div>
+    <div class="recall-note">이 방식에서는 직접 파일을 다운로드하고 업로드해서 새로운 AI에 학습시켰습니다. 설문에서는 이 과정이 얼마나 번거롭거나 신뢰감을 주었는지 떠올려 주세요.</div>
     <div class="btn-stack">
       <button class="btn-primary" data-action="finish-condition">설문으로 돌아가서 응답하기 →</button>
     </div>
@@ -716,7 +885,12 @@ function getScreen() {
     if (p === 1) return screenConditionIntro('A');
     if (p === 2) return screenA2();
     if (p === 3) return screenA3();
-    return screenA4();
+    if (p === 4) return screenA4();
+    if (p === 5) return screenA5();
+    if (p === 6) return screenA6();
+    if (p === 7) return screenA7();
+    if (p === 8) return screenA8();
+    return screenA9();
   }
   if (c === 'B') {
     if (p === 1) return screenConditionIntro('B');
@@ -753,8 +927,16 @@ const actions = {
   'start-next-condition': () => nextCondition(),
 
   // Condition A
-  'a-begin-auto': () => { state.conditionPhase = 3; render(); },
-  'a-complete':   () => { state.conditionPhase = 4; render(); },
+  'a-settings':      () => { state.conditionPhase = 3; render(); },
+  'a-export-data':   () => { state.conditionPhase = 4; render(); },
+  'a-download-link': () => {
+    state.a.downloadPhase = 'downloading'; render();
+    schedule(() => { state.a.downloadPhase = 'done'; render(); }, 2000);
+  },
+  'a-to-file-select': () => { state.conditionPhase = 6; render(); },
+  'a-upload-files':   () => { state.conditionPhase = 7; render(); },
+  'a-send-learn':     () => { state.conditionPhase = 8; render(); },
+  'a-complete':       () => { state.conditionPhase = 9; render(); },
 
   // Condition B
   'b-do-upload': () => {
@@ -802,6 +984,15 @@ app.addEventListener('click', (e) => {
 });
 
 app.addEventListener('change', (e) => {
+  const fileCb = e.target.closest('input[type="checkbox"][data-file]');
+  if (fileCb) {
+    const id = fileCb.dataset.file;
+    state.a.selectedFiles = fileCb.checked
+      ? [...new Set([...state.a.selectedFiles, id])]
+      : state.a.selectedFiles.filter(f => f !== id);
+    render();
+    return;
+  }
   const cb = e.target.closest('input[type="checkbox"][data-item]');
   if (!cb) return;
   const item = cb.dataset.item;
