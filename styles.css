@@ -1251,6 +1251,155 @@ textarea:focus {
   padding-top: 4px;
 }
 
+/* ─── Condition B: Import Modal ─────────────────────── */
+.import-modal-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-xl);
+  padding: 20px 18px;
+  box-shadow: var(--shadow-sm);
+}
+
+.import-modal-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+  margin-bottom: 16px;
+}
+
+.import-step-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.import-step-num {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--text-primary);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.import-step-done {
+  background: var(--success-text);
+}
+
+.import-step-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.4;
+}
+
+.import-prompt-box {
+  margin-top: 10px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 12px 14px 10px;
+  position: relative;
+}
+
+.import-prompt-text {
+  font-size: 12.5px;
+  color: var(--text-secondary);
+  line-height: 1.65;
+  white-space: pre-line;
+  max-height: 140px;
+  overflow-y: auto;
+  padding-bottom: 36px;
+}
+
+.import-copy-btn {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  padding: 6px 14px;
+  border-radius: var(--r-sm);
+  border: 1.5px solid var(--border-mid);
+  background: var(--surface);
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.import-copy-btn.copied {
+  background: var(--success-bg);
+  border-color: var(--success-border);
+  color: var(--success-text);
+}
+
+.import-paste-box {
+  margin-top: 10px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 12px 14px;
+  font-size: 12.5px;
+  color: var(--text-faint);
+  line-height: 1.65;
+  min-height: 80px;
+}
+
+.import-paste-filled {
+  color: var(--text-secondary);
+  white-space: pre-line;
+}
+
+.import-success-icon {
+  font-size: 32px;
+  line-height: 1;
+}
+
+/* ─── Condition B: Toggle ────────────────────────────── */
+.sim-toggle {
+  width: 44px;
+  height: 26px;
+  border-radius: 999px;
+  background: var(--beige);
+  flex-shrink: 0;
+  position: relative;
+}
+
+.sim-toggle::after {
+  content: '';
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #fff;
+  top: 3px;
+  left: 3px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+}
+
+.sim-toggle.on {
+  background: #0066CC;
+}
+
+.sim-toggle.on::after {
+  left: 21px;
+}
+
+/* ─── Condition B: GPT avatar ────────────────────────── */
+.avatar-gpt {
+  background: #19C37D;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+}
+
 /* ─── Condition A: User bubble ───────────────────────── */
 .user-bubble {
   background: var(--text-primary);

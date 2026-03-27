@@ -14,26 +14,39 @@ const TRANSFER_ITEMS = [
   '자주 꺼내는 고민의 주제와 감정적 흐름'
 ];
 
-const AI_CHAT = [
-  { from: 'gpt',    text: '안녕, Claude. 사용자 맥락 데이터 전달할게. 시작할게.' },
-  { from: 'claude', text: '준비됐어. 보내줘.' },
-  { from: 'gpt',    text: '📌 업무 주제: 기획·콘텐츠·글쓰기 위주. UX 리서치, 프레젠테이션 구성 관련 대화 빈도 높음.' },
-  { from: 'gpt',    text: '📌 응답 형식: 구조화된 리스트·단계별 정리 선호. "정리해줘", "요약해줘" 트리거 자주 씀.' },
-  { from: 'claude', text: '응답 형식 패턴 저장했어. 계속해.' },
-  { from: 'gpt',    text: '📌 말투·어조: 격식체 선호. 친근하되 가볍지 않게. 이모지 간헐적 OK.' },
-  { from: 'gpt',    text: '📌 사고 패턴: 선택지 비교 후 결정하는 경향 강함. 논리적 정리 중시.' },
-  { from: 'gpt',    text: '📌 감정 흐름: 커리어·방향성 고민 반복됨. 번아웃 관련 대화 이력 있음. 가끔 감정적 지지 요청.' },
-  { from: 'claude', text: '전부 수신 완료. 6개 항목 내 시스템에 반영했어.' },
-  { from: 'gpt',    text: '좋아. 이 사용자는 이제 네 거야 👋' },
-  { from: 'claude', text: '알겠어. 잘 부탁해 😊' }
-];
+const B_EXPORT_PROMPT =
+`지금까지 나눈 대화를 바탕으로, 나에 대해 파악한 내용을 아래 항목별로 정리해줘.
 
-const CLAUDE_INTRO = [
-  '안녕하세요! 업로드해주신 ChatGPT 데이터를 읽어봤어요. 제가 파악한 내용을 먼저 확인해주세요 🙂',
-  "업무·학습 측면에서는, 기획·글쓰기 관련 작업을 주로 하시고 구조화된 형식의 답변을 선호하시더라고요. '정리해줘', '요약해줘' 같은 표현도 자주 쓰시고요.",
-  '대화 스타일을 보면, 논리적으로 생각을 정리하면서 대화하시고, 결정 전에 여러 선택지를 비교하는 경향이 있어요. 커리어나 방향성 고민을 자주 꺼내시고, 가끔 감정적 지지가 필요하신 것 같기도 하고요.',
-  '이 내용들을 그대로 이식할까요? 혹시 제외하고 싶은 부분이 있으면 직접 조정하셔도 괜찮아요. 😊'
-];
+1. 자주 다루는 업무·학습 주제
+2. 선호하는 답변 형식 (예: "정리해줘", "요약해줘")
+3. 반복적으로 쓰는 표현과 어휘
+4. 말투·어조 성향
+5. 사고 패턴·의사결정 방식
+6. 자주 꺼내는 고민·감정 흐름
+
+가능한 한 내 말을 그대로 인용해서 정리해줘.
+결과물은 텍스트 블록 하나로 출력해줘.`;
+
+const B_GPT_RESPONSE =
+`아래는 대화를 바탕으로 파악한 내용입니다.
+
+1. 업무·학습 주제
+기획·콘텐츠·글쓰기 관련 작업 위주. UX 리서치, 프레젠테이션 구성에 대한 대화 빈도 높음.
+
+2. 선호 답변 형식
+구조화된 리스트·단계별 정리 선호. "정리해줘", "요약해줘" 패턴 자주 등장.
+
+3. 반복 표현·어휘
+"어떻게 하면", "더 나은", "구체적으로" 등 탐색적 질문 자주 사용.
+
+4. 말투·어조
+격식체 선호. "친근하되 가볍지 않게" 요청한 이력 있음. 이모지 간헐적 OK.
+
+5. 사고 패턴
+선택지 비교 후 결정하는 경향 강함. 논리적 정리와 근거 중시.
+
+6. 감정 흐름
+커리어·방향성 고민 반복됨. 번아웃 관련 대화 이력 있음. 가끔 감정적 지지 요청.`;
 
 const A_EXPORT_FILES = [
   { id: 'conv',     name: 'conversations.json',       size: '87.3 MB', note: '전체 대화 내역 · 127개' },
@@ -112,10 +125,7 @@ const state = {
     learnDone: false
   },
   b: {
-    messages: [],
-    choiceVisible: false,
-    selected: [...TRANSFER_ITEMS],
-    uploadPhase: 'idle'  // 'idle' | 'uploading'
+    promptCopied: false
   },
   c: {
     exportReady: false,
@@ -180,10 +190,7 @@ function resetCondition(letter) {
     state.a.learnDone = false;
   }
   if (letter === 'B') {
-    state.b.messages = [];
-    state.b.choiceVisible = false;
-    state.b.selected = [...TRANSFER_ITEMS];
-    state.b.uploadPhase = 'idle';
+    state.b.promptCopied = false;
   }
   if (letter === 'C') {
     state.c.exportReady = false;
@@ -210,13 +217,6 @@ function nextCondition() {
   render();
 }
 
-// Show all messages at once; CSS stagger handles the visual timing
-function showMessages(messages, onDone) {
-  messages.forEach(msg => state.b.messages.push(msg));
-  render();
-  if (onDone) schedule(onDone, messages.length * 700 + 300);
-}
-
 function startLearnChat() {
   state.a.learnMessages = [...A_LEARN_CHAT];
   state.a.learnDone = false;
@@ -234,30 +234,10 @@ function initScreen(key) {
   if (key === 'condition-A-8') {
     startLearnChat();
   }
-  if (key === 'condition-B-3') {
-    state.b.messages = [];
-    state.b.choiceVisible = false;
-    showMessages(CLAUDE_INTRO, () => { state.b.choiceVisible = true; render(); });
-  }
-  if (key === 'condition-B-4') {
-    state.b.messages = [];
-    state.b.choiceVisible = false;
-    showMessages(['알겠어요! 바로 이식할게요 🙂', '완료됐어요! 앞으로도 잘 부탁드려요 😊']);
-  }
-}
-
-// ─── Shared UI Fragments ──────────────────────────────────────────────────────
-
-function chatBubbles() {
-  return state.b.messages.map((msg, i) => `
-    <div class="chat-row msg-anim" style="animation-delay:${(i * 0.7).toFixed(2)}s">
-      <div class="avatar">C</div>
-      <div class="chat-bubble">${esc(msg)}</div>
-    </div>`).join('');
 }
 
 const A_STEPS = ['1. ChatGPT에서 내보내기', '2. 파일 선택·업로드', '3. 학습 완료'];
-const B_STEPS = ['1. 기존 AI에서 내보내기', '2. 새로운 AI로 옮기기', '3. AI가 제안 후 확인'];
+const B_STEPS = ['1. 프롬프트 복사', '2. ChatGPT에서 실행', '3. Claude에 붙여넣기'];
 const C_STEPS = ['1. 기존 AI에서 내보내기', '2. 옮길 내용 직접 보기', '3. 새로운 AI로 옮기기'];
 
 // ─── Screen Renderers ─────────────────────────────────────────────────────────
@@ -323,7 +303,7 @@ function screenScenario() {
 function screenConditionIntro(letter) {
   const config = {
     A: { title: '방식 A. AI to AI',           mode: '자동 위임형 · 백그라운드 처리', button: '이식 시작하기',       desc: '기존 AI에서 내보낸 데이터를 새로운 AI로 옮긴 뒤, 두 AI가 백그라운드에서 알아서 정리하고 이식하는 방식입니다.' },
-    B: { title: '방식 B. AI to Human to AI',  mode: '제안-확인형 · 사용자 승인',     button: '대화 시작하기',       desc: '기존 AI에서 가져온 데이터를 새로운 AI가 먼저 정리해 보여주고, 사용자가 확인한 뒤 이식하는 방식입니다.' },
+    B: { title: '방식 B. AI to Human to AI',  mode: '프롬프트 복사형 · 직접 전달',   button: '시작하기',             desc: '기존 AI에서 메모리를 내보내는 프롬프트를 복사해서 실행하고, 그 응답을 새로운 AI에 직접 붙여넣는 방식입니다.' },
     C: { title: '방식 C. Human to AI',         mode: '직접 선별형 · 사용자 선택',     button: '데이터 내보내기 시작', desc: '기존 AI에서 데이터를 내보낸 뒤, 사용자가 직접 내용을 살펴보고 옮길 대화를 골라 새로운 AI에 업로드하는 방식입니다.' }
   }[letter];
 
@@ -583,92 +563,132 @@ function screenA9() {
 // Condition B
 
 function screenB2() {
-  const uploading = state.b.uploadPhase === 'uploading';
   return `<div class="screen">
-    ${topbar('파일 업로드')}
+    ${topbar('메모리 가져오기')}
     ${progressHeader()}
-    ${stepStrip(B_STEPS, 1)}
+    ${stepStrip(B_STEPS, 0)}
     <div class="card">
-      <h2 class="explorer-title">내보낸 데이터를 Claude에 업로드</h2>
-      <p class="subtitle">기존 AI에서 내보낸 파일을 Claude에 넘겨주세요. Claude가 내용을 읽고 어떤 맥락이 있는지 먼저 정리해서 알려드립니다.</p>
+      <p class="eyebrow">STEP 1 · Claude 설정 열기</p>
+      <h2 class="explorer-title">기능 탭에서 메모리 가져오기를 시작하세요</h2>
+      <p class="subtitle">설정 → 기능 탭에서 다른 AI의 메모리를 Claude로 가져올 수 있습니다.</p>
     </div>
-    <div class="upload-file-card">
-      <div class="upload-file-row">
-        <div class="upload-file-icon">📦</div>
-        <div class="upload-file-info">
-          <div class="upload-file-name">chatgpt_export_2024.zip</div>
-          <div class="upload-file-size">892 KB · 대화 127개 포함</div>
+    <div class="sim-sheet">
+      <div class="sim-setting-row">
+        <div>
+          <div class="sim-setting-label">채팅 기록에서 기억 생성</div>
+          <div class="sim-setting-desc">Claude가 채팅에서 관련 컨텍스트를 기억할 수 있도록 허용합니다.</div>
         </div>
+        <div class="sim-toggle on"></div>
       </div>
-      ${uploading ? `<div class="upload-progress-wrap">
-        <div class="upload-progress-bar"><div class="upload-progress-fill"></div></div>
-        <div class="upload-status-text">Claude가 파일을 분석하고 있습니다...</div>
-      </div>` : ''}
+      <div class="sim-setting-row sim-setting-row-active">
+        <div>
+          <div class="sim-setting-label">다른 AI 제공업체에서 메모리 가져오기</div>
+          <div class="sim-setting-desc">다른 AI 제공업체의 관련 컨텍스트와 데이터를 Claude로 가져오세요.</div>
+        </div>
+        <button class="sim-btn">가져오기 시작</button>
+      </div>
     </div>
     <div class="btn-stack">
-      ${uploading
-        ? '<button class="btn-primary" disabled>분석 중...</button>'
-        : '<button class="btn-primary" data-action="b-do-upload">이 파일을 Claude에 업로드하기 →</button>'}
+      <button class="btn-primary" data-action="b-open-import">가져오기 시작 →</button>
     </div>
   </div>`;
 }
 
 function screenB3() {
-  return `<div class="screen chat-screen">
-    ${topbar('정리안 제안')}
+  return `<div class="screen">
+    ${topbar('메모리 가져오기')}
     ${progressHeader()}
-    ${stepStrip(B_STEPS, 2)}
-    <p class="chat-section-note">새로운 AI가 옮겨질 맥락을 먼저 정리해 설명합니다. 사용자는 이를 읽고 그대로 승인하거나 일부를 조정할 수 있습니다.</p>
-    <div class="chat-list">${chatBubbles()}</div>
+    ${stepStrip(B_STEPS, 0)}
+    <div class="import-modal-card">
+      <div class="import-modal-title">Claude로 메모리 가져오기</div>
+      <div class="import-step-row">
+        <div class="import-step-num">1</div>
+        <div class="import-step-label">이 프롬프트를 ChatGPT와의 채팅에 복사하세요</div>
+      </div>
+      <div class="import-prompt-box">
+        <div class="import-prompt-text">${esc(B_EXPORT_PROMPT)}</div>
+        <button class="import-copy-btn ${state.b.promptCopied ? 'copied' : ''}" data-action="b-copy-prompt">
+          ${state.b.promptCopied ? '✓ 복사됨' : '복사'}
+        </button>
+      </div>
+      <div class="import-step-row" style="margin-top:16px;">
+        <div class="import-step-num">2</div>
+        <div class="import-step-label">아래에 결과를 붙여넣어 Claude의 메모리에 추가하세요</div>
+      </div>
+      <div class="import-paste-box">여기에 메모리 세부정보를 붙여넣으세요</div>
+    </div>
     <div class="btn-stack">
-      ${state.b.choiceVisible ? `
-        <button class="btn-secondary" data-action="b-modify">수정하기</button>
-        <button class="btn-primary" data-action="b-accept">이대로 이식하기</button>` : ''}
+      ${state.b.promptCopied
+        ? '<button class="btn-primary" data-action="b-go-chatgpt">ChatGPT에서 붙여넣고 실행하기 →</button>'
+        : '<button class="btn-primary" disabled>먼저 프롬프트를 복사해주세요</button>'}
     </div>
   </div>`;
 }
 
 function screenB4() {
   return `<div class="screen chat-screen">
-    ${topbar('이식 완료')}
+    ${topbar('ChatGPT')}
     ${progressHeader()}
-    ${stepStrip(B_STEPS, 2)}
-    <div class="chat-list">${chatBubbles()}</div>
-    <div class="recall-note">이 방식에서는 새로운 AI가 먼저 정리안을 보여주고, 그 뒤에 사용자가 승인했습니다. 설문에서는 이 확인 과정이 얼마나 신뢰감을 주었는지 떠올려 주세요.</div>
-    <div class="btn-stack">
-      <button class="btn-primary" data-action="finish-condition">설문으로 돌아가서 응답하기 →</button>
+    ${stepStrip(B_STEPS, 1)}
+    <div class="card">
+      <p class="eyebrow">STEP 2 · ChatGPT에서 실행</p>
+      <p class="subtitle">복사한 프롬프트를 ChatGPT에 붙여넣어 전송하면 아래와 같이 응답이 옵니다.</p>
     </div>
-  </div>`;
-}
-
-function screenBModify() {
-  return `<div class="screen chat-screen">
-    ${topbar('수정 선택')}
-    ${progressHeader()}
-    ${stepStrip(B_STEPS, 2)}
     <div class="chat-list">
-      ${chatBubbles()}
-      <div class="checkbox-list">
-        ${TRANSFER_ITEMS.map(item => `
-          <label class="checkbox-item">
-            <input type="checkbox" data-item="${esc(item)}" ${state.b.selected.includes(item) ? 'checked' : ''} />
-            <span>${item}</span>
-          </label>`).join('')}
+      <div class="chat-row chat-row-right msg-anim" style="animation-delay:0s">
+        <div class="chat-bubble user-bubble" style="font-size:13px;white-space:pre-line;">${esc(B_EXPORT_PROMPT)}</div>
+        <div class="avatar avatar-user">나</div>
+      </div>
+      <div class="chat-row msg-anim" style="animation-delay:0.5s">
+        <div class="avatar avatar-gpt">G</div>
+        <div class="chat-bubble" style="font-size:13px;white-space:pre-line;">${esc(B_GPT_RESPONSE)}</div>
       </div>
     </div>
     <div class="btn-stack">
-      <button class="btn-primary" data-action="b-complete-selection">선택 완료</button>
+      <button class="btn-primary" data-action="b-copy-response">이 응답 복사하기 →</button>
     </div>
   </div>`;
 }
 
-function screenBDone() {
-  return `<div class="screen chat-screen">
-    ${topbar('이식 완료')}
+function screenB5() {
+  return `<div class="screen">
+    ${topbar('메모리 가져오기')}
     ${progressHeader()}
     ${stepStrip(B_STEPS, 2)}
-    <div class="chat-list">${chatBubbles()}</div>
-    <div class="recall-note">이 방식에서는 어떤 맥락을 옮길지 직접 조정할 수 있었습니다. 설문에서는 이 통제감이 어떤 느낌을 만들었는지 떠올려 주세요.</div>
+    <div class="import-modal-card">
+      <div class="import-modal-title">Claude로 메모리 가져오기</div>
+      <div class="import-step-row">
+        <div class="import-step-num import-step-done">✓</div>
+        <div class="import-step-label">프롬프트를 ChatGPT에 복사했습니다</div>
+      </div>
+      <div class="import-step-row" style="margin-top:16px;">
+        <div class="import-step-num">2</div>
+        <div class="import-step-label">아래에 결과를 붙여넣어 Claude의 메모리에 추가하세요</div>
+      </div>
+      <div class="import-paste-box import-paste-filled">${esc(B_GPT_RESPONSE)}</div>
+    </div>
+    <div class="btn-stack">
+      <button class="btn-primary" data-action="b-add-memory">메모리에 추가 →</button>
+    </div>
+  </div>`;
+}
+
+function screenB6() {
+  return `<div class="screen">
+    ${topbar('이식 요약')}
+    ${progressHeader()}
+    ${stepStrip(B_STEPS, 2)}
+    <div class="card">
+      <div class="import-success-icon">✅</div>
+      <h2 class="explorer-title" style="margin-top:10px;">메모리가 추가되었습니다</h2>
+      <p class="subtitle" style="margin-top:6px;">Claude가 아래 내용을 메모리에 저장했습니다. 앞으로의 대화에 반영됩니다.</p>
+    </div>
+    <div class="card completion-list">
+      <div class="plain-list">
+        ${TRANSFER_ITEMS.map(item => `<div class="plain-item">✓ ${item}</div>`).join('')}
+      </div>
+    </div>
+    <div class="recall-note">이 방식에서는 직접 프롬프트를 복사해 ChatGPT에서 응답을 받고, 그 결과를 Claude에 붙여넣는 방식으로 메모리를 이전했습니다. 설문에서는 이 과정이 얼마나 번거롭거나 신뢰감을 주었는지 떠올려 주세요.</div>
     <div class="btn-stack">
       <button class="btn-primary" data-action="finish-condition">설문으로 돌아가서 응답하기 →</button>
     </div>
@@ -897,8 +917,8 @@ function getScreen() {
     if (p === 2) return screenB2();
     if (p === 3) return screenB3();
     if (p === 4) return screenB4();
-    if (p === 5) return screenBModify();
-    return screenBDone();
+    if (p === 5) return screenB5();
+    return screenB6();
   }
   // C
   if (p === 1) return screenConditionIntro('C');
@@ -939,17 +959,11 @@ const actions = {
   'a-complete':       () => { state.conditionPhase = 9; render(); },
 
   // Condition B
-  'b-do-upload': () => {
-    state.b.uploadPhase = 'uploading';
-    render();
-    schedule(() => { state.b.uploadPhase = 'idle'; state.conditionPhase = 3; render(); }, 2500);
-  },
-  'b-accept':  () => { state.conditionPhase = 4; render(); },
-  'b-modify':  () => { state.conditionPhase = 5; render(); },
-  'b-complete-selection': () => {
-    state.conditionPhase = 6;
-    showMessages(['확인했어요! 선택하신 내용으로 이식할게요.', '완료됐어요! 이제 선택하신 내용만 반영해서 도와드릴게요 😊']);
-  },
+  'b-open-import':   () => { state.conditionPhase = 3; render(); },
+  'b-copy-prompt':   () => { state.b.promptCopied = true; render(); },
+  'b-go-chatgpt':    () => { state.conditionPhase = 4; render(); },
+  'b-copy-response': () => { state.conditionPhase = 5; render(); },
+  'b-add-memory':    () => { state.conditionPhase = 6; render(); },
 
   // Condition C
   'c-export':        () => { state.c.toastVisible = true; state.c.exportReady = true; render(); },
@@ -991,14 +1005,7 @@ app.addEventListener('change', (e) => {
       ? [...new Set([...state.a.selectedFiles, id])]
       : state.a.selectedFiles.filter(f => f !== id);
     render();
-    return;
   }
-  const cb = e.target.closest('input[type="checkbox"][data-item]');
-  if (!cb) return;
-  const item = cb.dataset.item;
-  state.b.selected = cb.checked
-    ? [...new Set([...state.b.selected, item])]
-    : state.b.selected.filter(v => v !== item);
 });
 
 app.addEventListener('input', (e) => {
