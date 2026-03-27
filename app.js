@@ -116,6 +116,7 @@ const state = {
   },
   c: {
     downloadPhase: 'idle',  // 'idle' | 'downloading' | 'done'
+    activeFolder: null,
     selectedFiles: [],
     learnMessages: [],
     learnDone: false
@@ -173,6 +174,7 @@ function resetCondition(letter) {
   }
   if (letter === 'C') {
     state.c.downloadPhase = 'idle';
+    state.c.activeFolder = null;
     state.c.selectedFiles = [];
     state.c.learnMessages = [];
     state.c.learnDone = false;
@@ -208,7 +210,7 @@ function initScreen(key) {
   state.lastScreenKey = key;
   clearTimers();
 
-  if (key === 'condition-C-8') {
+  if (key === 'condition-C-10') {
     startLearnChat();
   }
 }
@@ -435,8 +437,58 @@ function screenC5() {
     </div>
     ${done ? `
       <div class="btn-stack">
-        <button class="btn-primary" data-action="c-to-file-select">Claude에 파일 올리기 →</button>
+        <button class="btn-primary" data-action="c-to-folders">ZIP 파일 열어보기 →</button>
       </div>` : ''}
+  </div>`;
+}
+
+function screenCFolders() {
+  return `<div class="screen">
+    ${topbar('ZIP 파일 탐색')}
+    ${progressHeader()}
+    ${stepStrip(C_STEPS, 0)}
+    <div class="card">
+      <p class="eyebrow">STEP 4.5 · ZIP 파일 내부</p>
+      <h2 class="explorer-title">다운로드된 ZIP을 열어봤습니다</h2>
+      <p class="subtitle">안에 담긴 대화 폴더 목록입니다. 폴더명은 암호화된 ID로 되어있어 어떤 대화인지 알기 어렵습니다.</p>
+    </div>
+    <div class="sim-sheet">
+      ${FOLDERS.map(f => `
+        <div class="sim-menu-row" data-action="c-open-folder" data-folder="${esc(f.id)}" style="cursor:pointer;">
+          <span>📁 <span class="folder-id-text">${esc(f.id)}</span></span>
+          <span class="sim-chevron">›</span>
+        </div>`).join('')}
+    </div>
+    <div class="warning">💡 실제 ChatGPT 데이터에는 이런 폴더가 수백 개 존재합니다. 폴더명만 보고는 어떤 대화인지 구별하기 어렵습니다.</div>
+    <div class="btn-stack">
+      <button class="btn-primary" data-action="c-to-file-select">파일 선택하러 가기 →</button>
+    </div>
+  </div>`;
+}
+
+function screenCFolderDetail() {
+  const folder = FOLDERS.find(f => f.id === state.c.activeFolder) || FOLDERS[0];
+  return `<div class="screen">
+    ${topbar('폴더 내용')}
+    ${progressHeader()}
+    ${stepStrip(C_STEPS, 0)}
+    <div class="card">
+      <p class="eyebrow">폴더 내용 보기</p>
+      <h2 class="explorer-title" style="word-break:break-all;font-size:13px;font-family:monospace;">${esc(folder.id)}</h2>
+    </div>
+    <div class="sim-sheet">
+      <div class="folder-preview-box">
+        <pre class="folder-preview-pre">${esc(folder.preview)}</pre>
+      </div>
+      <div class="folder-snippet-row">
+        <div class="folder-snippet-label">첫 메시지 미리보기</div>
+        <div class="folder-snippet-text">${esc(folder.snippet)}</div>
+      </div>
+    </div>
+    <div class="btn-stack">
+      <button class="btn-secondary" data-action="c-back-to-folders">← 목록으로</button>
+      <button class="btn-primary" data-action="c-to-file-select">파일 선택하러 가기 →</button>
+    </div>
   </div>`;
 }
 
@@ -752,14 +804,16 @@ function getScreen() {
     return screenB6();
   }
   // C
-  if (p === 1) return screenConditionIntro('C');
-  if (p === 2) return screenC2();
-  if (p === 3) return screenC3();
-  if (p === 4) return screenC4();
-  if (p === 5) return screenC5();
-  if (p === 6) return screenC6();
-  if (p === 7) return screenC7();
-  if (p === 8) return screenC8();
+  if (p === 1)  return screenConditionIntro('C');
+  if (p === 2)  return screenC2();
+  if (p === 3)  return screenC3();
+  if (p === 4)  return screenC4();
+  if (p === 5)  return screenC5();
+  if (p === 6)  return screenCFolders();
+  if (p === 7)  return screenCFolderDetail();
+  if (p === 8)  return screenC6();
+  if (p === 9)  return screenC7();
+  if (p === 10) return screenC8();
   return screenC9();
 }
 
@@ -789,10 +843,13 @@ const actions = {
     render();
     schedule(() => { state.c.downloadPhase = 'done'; render(); }, 2000);
   },
-  'c-to-file-select': () => { state.conditionPhase = 6; render(); },
-  'c-upload-files':   () => { state.conditionPhase = 7; render(); },
-  'c-send-learn':     () => { state.conditionPhase = 8; render(); },
-  'c-complete':       () => { state.conditionPhase = 9; render(); },
+  'c-to-folders':       () => { state.conditionPhase = 6; render(); },
+  'c-open-folder':      (el) => { state.c.activeFolder = el.dataset.folder; state.conditionPhase = 7; render(); },
+  'c-back-to-folders':  () => { state.conditionPhase = 6; render(); },
+  'c-to-file-select':   () => { state.conditionPhase = 8; render(); },
+  'c-upload-files':     () => { state.conditionPhase = 9; render(); },
+  'c-send-learn':       () => { state.conditionPhase = 10; render(); },
+  'c-complete':         () => { state.conditionPhase = 11; render(); },
 
   // Condition B
   'b-open-import':   () => { state.conditionPhase = 3; render(); },
