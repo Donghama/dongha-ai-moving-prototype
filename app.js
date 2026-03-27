@@ -43,14 +43,14 @@ const B_GPT_RESPONSE =
 6. 감정 흐름
 커리어·방향성 고민 반복됨. 번아웃 관련 대화 이력 있음. 가끔 감정적 지지 요청.`;
 
-const A_EXPORT_FILES = [
+const C_EXPORT_FILES = [
   { id: 'conv',     name: 'conversations.json',       size: '87.3 MB', note: '전체 대화 내역 · 127개' },
   { id: 'user',     name: 'user.json',                 size: '0.1 MB',  note: '프로필·설정 정보' },
   { id: 'feedback', name: 'message_feedback.json',     size: '2.1 MB',  note: '메시지 피드백 내역' },
   { id: 'shared',   name: 'shared_conversations.json', size: '0.8 MB',  note: '공유한 대화 목록' }
 ];
 
-const A_LEARN_CHAT = [
+const C_LEARN_CHAT = [
   '파일을 받았어요. 지금 분석을 시작할게요.',
   '대화 127개를 확인했어요. 기획·글쓰기·UX 관련 주제가 많네요.',
   '"정리해줘", "요약해줘" 같은 표현을 자주 쓰시고, 구조화된 목록 형식을 선호하시더라고요.',
@@ -110,22 +110,15 @@ const state = {
   conditionPhase: 1,
   lastScreenKey: '',
   timers: [],
-  a: {
-    downloadPhase: 'idle',  // 'idle' | 'downloading' | 'done'
-    selectedFiles: [],
-    learnMessages: [],
-    learnDone: false
-  },
+  a: {},
   b: {
     promptCopied: false
   },
   c: {
-    exportReady: false,
-    toastVisible: false,
-    selectedFolders: [],
-    activeFolder: null,
-    previewOpen: true,
-    note: ''
+    downloadPhase: 'idle',  // 'idle' | 'downloading' | 'done'
+    selectedFiles: [],
+    learnMessages: [],
+    learnDone: false
   }
 };
 
@@ -175,22 +168,14 @@ function topbar(label) {
 // ─── Flow Control ─────────────────────────────────────────────────────────────
 
 function resetCondition(letter) {
-  if (letter === 'A') {
-    state.a.downloadPhase = 'idle';
-    state.a.selectedFiles = [];
-    state.a.learnMessages = [];
-    state.a.learnDone = false;
-  }
   if (letter === 'B') {
     state.b.promptCopied = false;
   }
   if (letter === 'C') {
-    state.c.exportReady = false;
-    state.c.toastVisible = false;
-    state.c.selectedFolders = [];
-    state.c.activeFolder = null;
-    state.c.previewOpen = true;
-    state.c.note = '';
+    state.c.downloadPhase = 'idle';
+    state.c.selectedFiles = [];
+    state.c.learnMessages = [];
+    state.c.learnDone = false;
   }
 }
 
@@ -210,10 +195,10 @@ function nextCondition() {
 }
 
 function startLearnChat() {
-  state.a.learnMessages = [...A_LEARN_CHAT];
-  state.a.learnDone = false;
+  state.c.learnMessages = [...C_LEARN_CHAT];
+  state.c.learnDone = false;
   render();
-  schedule(() => { state.a.learnDone = true; render(); }, A_LEARN_CHAT.length * 750 + 800);
+  schedule(() => { state.c.learnDone = true; render(); }, C_LEARN_CHAT.length * 750 + 800);
 }
 
 // ─── Screen Init (runs once per screen key) ───────────────────────────────────
@@ -223,14 +208,14 @@ function initScreen(key) {
   state.lastScreenKey = key;
   clearTimers();
 
-  if (key === 'condition-A-8') {
+  if (key === 'condition-C-8') {
     startLearnChat();
   }
 }
 
-const A_STEPS = ['1. ChatGPT에서 내보내기', '2. 파일 선택·업로드', '3. 학습 완료'];
+const A_STEPS = ['1. 준비 중'];
 const B_STEPS = ['1. 프롬프트 복사', '2. ChatGPT에서 실행', '3. Claude에 붙여넣기'];
-const C_STEPS = ['1. 기존 AI에서 내보내기', '2. 옮길 내용 직접 보기', '3. 새로운 AI로 옮기기'];
+const C_STEPS = ['1. ChatGPT에서 내보내기', '2. 파일 선택·업로드', '3. 학습 완료'];
 
 // ─── Screen Renderers ─────────────────────────────────────────────────────────
 
@@ -294,9 +279,9 @@ function screenScenario() {
 
 function screenConditionIntro(letter) {
   const config = {
-    A: { title: '방식 A. AI to AI',           mode: '자동 위임형 · 백그라운드 처리', button: '이식 시작하기',       desc: '기존 AI에서 내보낸 데이터를 새로운 AI로 옮긴 뒤, 두 AI가 백그라운드에서 알아서 정리하고 이식하는 방식입니다.' },
+    A: { title: '방식 A',                      mode: '준비 중',                       button: '시작하기',             desc: '이 방식은 현재 설계 중입니다.' },
     B: { title: '방식 B. AI to Human to AI',  mode: '프롬프트 복사형 · 직접 전달',   button: '시작하기',             desc: '기존 AI에서 메모리를 내보내는 프롬프트를 복사해서 실행하고, 그 응답을 새로운 AI에 직접 붙여넣는 방식입니다.' },
-    C: { title: '방식 C. Human to AI',         mode: '직접 선별형 · 사용자 선택',     button: '데이터 내보내기 시작', desc: '기존 AI에서 데이터를 내보낸 뒤, 사용자가 직접 내용을 살펴보고 옮길 대화를 골라 새로운 AI에 업로드하는 방식입니다.' }
+    C: { title: '방식 C. Human to AI',         mode: '직접 이식형 · 파일 업로드',     button: '내보내기 시작',        desc: '기존 AI에서 전체 데이터를 직접 내보내고, 파일을 다운로드해서 새로운 AI에 직접 업로드해 학습시키는 방식입니다.' }
   }[letter];
 
   return `<div class="screen">
@@ -313,13 +298,30 @@ function screenConditionIntro(letter) {
   </div>`;
 }
 
-// Condition A
+// Condition A — placeholder (TBD)
 
 function screenA2() {
+  return `<div class="screen centered">
+    ${topbar('방식 A')}
+    ${progressHeader()}
+    <div class="card" style="text-align:center;padding:32px 20px;">
+      <div style="font-size:36px;margin-bottom:12px;">🚧</div>
+      <h2 class="explorer-title">준비 중입니다</h2>
+      <p class="subtitle" style="margin-top:8px;">방식 A는 현재 설계 중입니다.</p>
+    </div>
+    <div class="btn-stack">
+      <button class="btn-primary" data-action="finish-condition">다음으로 →</button>
+    </div>
+  </div>`;
+}
+
+// Condition C (formerly A: export → download → file select → upload → learn)
+
+function screenC2() {
   return `<div class="screen">
     ${topbar('데이터 내보내기')}
     ${progressHeader()}
-    ${stepStrip(A_STEPS, 0)}
+    ${stepStrip(C_STEPS, 0)}
     <div class="card">
       <p class="eyebrow">STEP 1 · ChatGPT 설정 열기</p>
       <h2 class="explorer-title">프로필에서 설정을 열어주세요</h2>
@@ -333,16 +335,16 @@ function screenA2() {
       <div class="sim-menu-row sim-menu-row-last"><span>로그아웃</span><span></span></div>
     </div>
     <div class="btn-stack">
-      <button class="btn-primary" data-action="a-settings">설정 열기 →</button>
+      <button class="btn-primary" data-action="c-settings">설정 열기 →</button>
     </div>
   </div>`;
 }
 
-function screenA3() {
+function screenC3() {
   return `<div class="screen">
     ${topbar('데이터 내보내기')}
     ${progressHeader()}
-    ${stepStrip(A_STEPS, 0)}
+    ${stepStrip(C_STEPS, 0)}
     <div class="card">
       <p class="eyebrow">STEP 2 · 데이터 제어</p>
       <h2 class="explorer-title">데이터 내보내기를 눌러주세요</h2>
@@ -372,16 +374,16 @@ function screenA3() {
       </div>
     </div>
     <div class="btn-stack">
-      <button class="btn-primary" data-action="a-export-data">데이터 내보내기 →</button>
+      <button class="btn-primary" data-action="c-export-data">데이터 내보내기 →</button>
     </div>
   </div>`;
 }
 
-function screenA4() {
+function screenC4() {
   return `<div class="screen">
     ${topbar('데이터 내보내기')}
     ${progressHeader()}
-    ${stepStrip(A_STEPS, 0)}
+    ${stepStrip(C_STEPS, 0)}
     <div class="card">
       <p class="eyebrow">STEP 3 · 이메일 확인</p>
       <h2 class="explorer-title">이메일로 링크를 발송했습니다</h2>
@@ -397,17 +399,17 @@ function screenA4() {
     </div>
     <div class="warning">💡 실제로는 이메일에서 인증 버튼을 클릭해야 다운로드 링크가 활성화됩니다. 이 실험에서는 해당 인증 과정을 생략합니다.</div>
     <div class="btn-stack">
-      <button class="btn-primary" data-action="a-download-link">다운로드 링크 열기 →</button>
+      <button class="btn-primary" data-action="c-download-link">다운로드 링크 열기 →</button>
     </div>
   </div>`;
 }
 
-function screenA5() {
-  const done = state.a.downloadPhase === 'done';
+function screenC5() {
+  const done = state.c.downloadPhase === 'done';
   return `<div class="screen">
     ${topbar('다운로드')}
     ${progressHeader()}
-    ${stepStrip(A_STEPS, 0)}
+    ${stepStrip(C_STEPS, 0)}
     <div class="card">
       <p class="eyebrow">STEP 4 · 파일 다운로드</p>
       <h2 class="explorer-title">${done ? '다운로드 완료' : '다운로드 중...'}</h2>
@@ -433,17 +435,17 @@ function screenA5() {
     </div>
     ${done ? `
       <div class="btn-stack">
-        <button class="btn-primary" data-action="a-to-file-select">Claude에 파일 올리기 →</button>
+        <button class="btn-primary" data-action="c-to-file-select">Claude에 파일 올리기 →</button>
       </div>` : ''}
   </div>`;
 }
 
-function screenA6() {
-  const canUpload = state.a.selectedFiles.length > 0;
+function screenC6() {
+  const canUpload = state.c.selectedFiles.length > 0;
   return `<div class="screen">
     ${topbar('파일 업로드')}
     ${progressHeader()}
-    ${stepStrip(A_STEPS, 1)}
+    ${stepStrip(C_STEPS, 1)}
     <div class="card">
       <p class="eyebrow">STEP 5 · Claude에 파일 선택</p>
       <h2 class="explorer-title">업로드할 파일을 골라주세요</h2>
@@ -451,10 +453,10 @@ function screenA6() {
     </div>
     <div class="warning">⚠ 파일 당 최대 100MB까지 업로드 가능합니다 (문서·이미지 기준). 용량이 큰 파일은 주의하세요.</div>
     <div class="sim-sheet">
-      ${A_EXPORT_FILES.map(f => {
+      ${C_EXPORT_FILES.map(f => {
         const sizeMB = parseFloat(f.size);
         const over = sizeMB > 100;
-        const sel = state.a.selectedFiles.includes(f.id);
+        const sel = state.c.selectedFiles.includes(f.id);
         return `<label class="file-select-row${sel ? ' file-sel-checked' : ''}${over ? ' file-sel-disabled' : ''}">
           <input type="checkbox" data-file="${f.id}" ${sel ? 'checked' : ''} ${over ? 'disabled' : ''} />
           <div class="file-sel-info">
@@ -466,19 +468,19 @@ function screenA6() {
       }).join('')}
     </div>
     <div class="btn-stack">
-      <button class="btn-primary" data-action="a-upload-files" ${!canUpload ? 'disabled' : ''}>선택한 파일 업로드하기 →</button>
+      <button class="btn-primary" data-action="c-upload-files" ${!canUpload ? 'disabled' : ''}>선택한 파일 업로드하기 →</button>
     </div>
   </div>`;
 }
 
-function screenA7() {
-  const names = A_EXPORT_FILES
-    .filter(f => state.a.selectedFiles.includes(f.id))
+function screenC7() {
+  const names = C_EXPORT_FILES
+    .filter(f => state.c.selectedFiles.includes(f.id))
     .map(f => f.name);
   return `<div class="screen chat-screen">
     ${topbar('Claude')}
     ${progressHeader()}
-    ${stepStrip(A_STEPS, 1)}
+    ${stepStrip(C_STEPS, 1)}
     <div class="card">
       <p class="eyebrow">STEP 6 · 학습 요청</p>
       <p class="subtitle">아래 메시지를 전송하면 Claude가 파일을 읽고 학습합니다.</p>
@@ -490,19 +492,19 @@ function screenA7() {
       <div class="chat-input-text">이 파일을 전부 학습해줘.</div>
     </div>
     <div class="btn-stack">
-      <button class="btn-primary" data-action="a-send-learn">전송하기 →</button>
+      <button class="btn-primary" data-action="c-send-learn">전송하기 →</button>
     </div>
   </div>`;
 }
 
-function screenA8() {
-  const messages = state.a.learnMessages.map((msg, i) => `
+function screenC8() {
+  const messages = state.c.learnMessages.map((msg, i) => `
     <div class="chat-row msg-anim" style="animation-delay:${(i * 0.75).toFixed(2)}s">
       <div class="avatar">C</div>
       <div class="chat-bubble">${esc(msg)}</div>
     </div>`).join('');
 
-  const popup = state.a.learnDone ? `
+  const popup = state.c.learnDone ? `
     <div class="modal-overlay">
       <div class="modal-sheet">
         <div class="modal-handle"></div>
@@ -512,14 +514,14 @@ function screenA8() {
         <div class="modal-list">
           ${TRANSFER_ITEMS.map(item => `<div class="modal-item">📌 ${item}</div>`).join('')}
         </div>
-        <button class="btn-primary" data-action="a-complete">확인하고 다음으로 →</button>
+        <button class="btn-primary" data-action="c-complete">확인하고 다음으로 →</button>
       </div>
     </div>` : '';
 
   return `<div class="screen chat-screen">
     ${topbar('Claude')}
     ${progressHeader()}
-    ${stepStrip(A_STEPS, 2)}
+    ${stepStrip(C_STEPS, 2)}
     <div class="chat-list">
       <div class="chat-row chat-row-right msg-anim" style="animation-delay:0s">
         <div class="chat-bubble user-bubble">이 파일을 전부 학습해줘.</div>
@@ -531,11 +533,11 @@ function screenA8() {
   </div>`;
 }
 
-function screenA9() {
+function screenC9() {
   return `<div class="screen">
     ${topbar('이식 요약')}
     ${progressHeader()}
-    ${stepStrip(A_STEPS, 2)}
+    ${stepStrip(C_STEPS, 2)}
     <div>
       <h1 class="title">이식 요약</h1>
       <p class="system-note">ChatGPT에서 내보낸 파일을 Claude에 직접 업로드해 학습시키는 방식으로, 총 6개 항목이 새로운 AI에 반영되었습니다.</p>
@@ -687,162 +689,6 @@ function screenB6() {
   </div>`;
 }
 
-// Condition C
-
-function screenC2() {
-  return `<div class="screen">
-    ${topbar('내보내기')}
-    ${progressHeader()}
-    ${stepStrip(C_STEPS, 0)}
-    <div class="card">
-      <h2 class="explorer-title">기존 AI 설정</h2>
-      <p class="explorer-subtitle">설정 &gt; 데이터 제어 &gt; 데이터 내보내기</p>
-    </div>
-    <div class="card">
-      <p class="subtitle">기존 AI의 전체 대화 데이터를 내보냅니다. 이후 사용자가 직접 내용을 보며 무엇을 새로운 AI로 옮길지 선택하게 됩니다.</p>
-    </div>
-    ${state.c.toastVisible ? '<div class="toast">✓ 데이터 준비가 완료되었습니다. 이메일로 다운로드 링크가 발송되었습니다.</div>' : ''}
-    <div class="btn-stack">
-      ${state.c.exportReady
-        ? '<button class="btn-primary" data-action="c-download">ZIP 파일 다운로드</button>'
-        : '<button class="btn-primary" data-action="c-export">내 데이터 내보내기</button>'}
-    </div>
-  </div>`;
-}
-
-function folderRows() {
-  const rows = FOLDERS.map((folder, i) => {
-    const selected = state.c.selectedFolders.includes(folder.id);
-    const showBadge = i >= 1 && i <= 3 && state.c.selectedFolders.length >= 1;
-    return `<div class="file-row ${selected ? 'selected' : ''}" data-action="open-folder" data-folder="${folder.id}">
-      <div class="file-name">
-        <div>📁 ${folder.id}</div>
-        ${showBadge && folder.snippet ? `<div class="file-preview">${esc(folder.snippet)}</div>` : ''}
-      </div>
-      <div class="file-meta">
-        ${selected ? '<span>✓</span>' : ''}
-        ${showBadge ? '<span class="badge">미리보기 가능</span>' : ''}
-      </div>
-    </div>`;
-  }).join('');
-
-  return rows + `
-    <div class="file-row"><div class="file-name">    ... (119개 더)</div><div class="file-meta"></div></div>
-    <div class="file-row"><div class="file-name">📄 conversations.json    892KB</div><div class="file-meta"></div></div>
-    <div class="file-row"><div class="file-name">📄 user.json               2KB</div><div class="file-meta"></div></div>
-    <div class="file-row"><div class="file-name">📄 message_feedback.json  14KB</div><div class="file-meta"></div></div>`;
-}
-
-function screenC3() {
-  const count = state.c.selectedFolders.length;
-  const canProceed = count >= 3;
-  const statusText = count > 0
-    ? `${canProceed ? '✓ ' : ''}선택된 대화: ${count}개${!canProceed ? ` · ${3 - count}개 더 선택해 주세요` : ''}`
-    : '폴더를 눌러 내용을 확인하세요';
-
-  return `<div class="screen">
-    ${topbar('파일 탐색')}
-    ${progressHeader()}
-    ${stepStrip(C_STEPS, 1)}
-    <div class="card">
-      <div class="eyebrow">이 방식에서 해야 할 일</div>
-      <div class="plain-list" style="margin-top:10px;">
-        <div class="plain-item">1️⃣ 아래 폴더를 직접 눌러 내용을 확인해 보세요</div>
-        <div class="plain-item">2️⃣ 새로운 AI에 전달할 대화를 <strong>3개 이상</strong> 선택해 주세요</div>
-        <div class="plain-item">3️⃣ 선택한 대화만 Claude에 업로드됩니다</div>
-      </div>
-      <div class="recall-note" style="margin-top:12px;">💡 실제 상황에서는 파일 전체를 통째로 업로드하거나, 이처럼 직접 골라 넣을 수 있습니다. 이 방식에서는 직접 선별해 봅니다.</div>
-    </div>
-    <div class="file-explorer">
-      <div class="explorer-header">
-        <h2 class="explorer-title">📁 chatgpt_export_2024.zip</h2>
-        <p class="explorer-subtitle">파일 127개</p>
-      </div>
-      <div style="padding:12px 14px 0;">
-        <div class="warning">⚠ 폴더 이름은 대화 ID로만 표시됩니다. 내용을 확인하려면 직접 열어봐야 합니다.</div>
-      </div>
-      <div class="file-list">${folderRows()}</div>
-    </div>
-    <div class="toolbar">
-      <div class="count" style="${count === 0 ? 'color:var(--text-muted)' : ''}">${statusText}</div>
-    </div>
-    <div class="btn-stack">
-      <button class="btn-primary" data-action="c-upload-screen" ${!canProceed ? 'disabled' : ''}>선택한 대화만 Claude에 업로드하기</button>
-    </div>
-  </div>`;
-}
-
-function screenC4() {
-  const folder = FOLDERS.find(f => f.id === state.c.activeFolder) || FOLDERS[0];
-  const fileSizes = ['3KB', '2KB', '4KB'];
-  const files = Array.from({ length: 6 }, (_, i) => `
-    <div class="folder-file">
-      <span>📄 message_${String(i + 1).padStart(4, '0')}.json    ${fileSizes[i % 3]}</span>
-      ${i === 0 ? '<button class="btn-inline" data-action="c-toggle-preview">미리보기</button>' : ''}
-    </div>`).join('');
-
-  return `<div class="screen">
-    ${topbar('대화 확인')}
-    ${progressHeader()}
-    ${stepStrip(C_STEPS, 1)}
-    <div class="card"><h2 class="explorer-title">📁 ${folder.id}</h2></div>
-    <div class="card">
-      ${files}
-      <div class="folder-file"><span>...</span><span>📄 message_0047.json    1KB</span></div>
-    </div>
-    ${state.c.previewOpen ? `
-      <pre class="code-block">${esc(folder.preview)}</pre>
-      <p class="system-note">이것이 실제 대화 내용입니다.</p>` : ''}
-    <div class="btn-stack">
-      <button class="btn-secondary" data-action="c-back-to-zip">← 뒤로</button>
-      <button class="btn-primary" data-action="c-select-folder">이 대화 선택하기</button>
-    </div>
-  </div>`;
-}
-
-function screenC5() {
-  const count = state.c.selectedFolders.length;
-  return `<div class="screen">
-    ${topbar('업로드')}
-    ${progressHeader()}
-    ${stepStrip(C_STEPS, 2)}
-    <div>
-      <h1 class="title">Claude에 업로드</h1>
-      <p class="subtitle">직접 골라낸 대화만 업로드됩니다. 선택하지 않은 맥락은 새 AI가 알 수 없습니다.</p>
-    </div>
-    <div class="chip-wrap">
-      ${state.c.selectedFolders.map(id => `
-        <div class="chip">
-          <span>${id.replace('...', '....json')}</span>
-          <button data-action="c-remove-chip" data-folder="${id}">×</button>
-        </div>`).join('')}
-    </div>
-    <textarea data-role="c-note" placeholder="Claude에게 추가로 전달할 내용이 있으면 입력하세요.
-(예: 이 대화들을 참고해서 나에 대해 파악해줘)">${esc(state.c.note)}</textarea>
-    <div class="btn-stack">
-      <button class="btn-primary" data-action="c-submit-upload" ${count === 0 ? 'disabled' : ''}>업로드하기</button>
-    </div>
-    <p class="system-note">선택하지 않은 대화는 업로드 대상에서 제외됩니다. 남은 대화 수: ${127 - count}개</p>
-  </div>`;
-}
-
-function screenC6() {
-  return `<div class="screen chat-screen">
-    ${topbar('업로드 완료')}
-    ${progressHeader()}
-    <div class="chat-list">
-      <div class="chat-row">
-        <div class="avatar">C</div>
-        <div class="chat-bubble">네, 업로드해주신 대화들을 확인했어요. 파악한 내용을 바탕으로 도와드릴게요.</div>
-      </div>
-    </div>
-    <p class="system-note">선택하지 않은 ${127 - state.c.selectedFolders.length}개 대화는 이전되지 않았습니다.</p>
-    <div class="recall-note">이 방식에서는 사용자가 직접 파일을 살펴보고 옮길 내용을 골라야 했습니다. 설문에서는 이 선택 과정이 얼마나 수고롭거나 통제감 있게 느껴졌는지 떠올려 주세요.</div>
-    <div class="btn-stack">
-      <button class="btn-primary" data-action="finish-condition">설문으로 돌아가서 응답하기 →</button>
-    </div>
-  </div>`;
-}
 
 // Global screens
 
@@ -895,14 +741,7 @@ function getScreen() {
 
   if (c === 'A') {
     if (p === 1) return screenConditionIntro('A');
-    if (p === 2) return screenA2();
-    if (p === 3) return screenA3();
-    if (p === 4) return screenA4();
-    if (p === 5) return screenA5();
-    if (p === 6) return screenA6();
-    if (p === 7) return screenA7();
-    if (p === 8) return screenA8();
-    return screenA9();
+    return screenA2();
   }
   if (c === 'B') {
     if (p === 1) return screenConditionIntro('B');
@@ -918,7 +757,10 @@ function getScreen() {
   if (p === 3) return screenC3();
   if (p === 4) return screenC4();
   if (p === 5) return screenC5();
-  return screenC6();
+  if (p === 6) return screenC6();
+  if (p === 7) return screenC7();
+  if (p === 8) return screenC8();
+  return screenC9();
 }
 
 // ─── Render ───────────────────────────────────────────────────────────────────
@@ -938,19 +780,19 @@ const actions = {
   'finish-condition':     () => finishCondition(),
   'start-next-condition': () => nextCondition(),
 
-  // Condition A
-  'a-settings':      () => { state.conditionPhase = 3; render(); },
-  'a-export-data':   () => { state.conditionPhase = 4; render(); },
-  'a-download-link': () => {
+  // Condition C
+  'c-settings':      () => { state.conditionPhase = 3; render(); },
+  'c-export-data':   () => { state.conditionPhase = 4; render(); },
+  'c-download-link': () => {
     state.conditionPhase = 5;
-    state.a.downloadPhase = 'downloading';
+    state.c.downloadPhase = 'downloading';
     render();
-    schedule(() => { state.a.downloadPhase = 'done'; render(); }, 2000);
+    schedule(() => { state.c.downloadPhase = 'done'; render(); }, 2000);
   },
-  'a-to-file-select': () => { state.conditionPhase = 6; render(); },
-  'a-upload-files':   () => { state.conditionPhase = 7; render(); },
-  'a-send-learn':     () => { state.conditionPhase = 8; render(); },
-  'a-complete':       () => { state.conditionPhase = 9; render(); },
+  'c-to-file-select': () => { state.conditionPhase = 6; render(); },
+  'c-upload-files':   () => { state.conditionPhase = 7; render(); },
+  'c-send-learn':     () => { state.conditionPhase = 8; render(); },
+  'c-complete':       () => { state.conditionPhase = 9; render(); },
 
   // Condition B
   'b-open-import':   () => { state.conditionPhase = 3; render(); },
@@ -959,29 +801,6 @@ const actions = {
   'b-copy-response': () => { state.conditionPhase = 5; render(); },
   'b-add-memory':    () => { state.conditionPhase = 6; render(); },
 
-  // Condition C
-  'c-export':        () => { state.c.toastVisible = true; state.c.exportReady = true; render(); },
-  'c-download':      () => { state.conditionPhase = 3; render(); },
-  'c-back-to-zip':   () => { state.conditionPhase = 3; render(); },
-  'c-toggle-preview':() => { state.c.previewOpen = !state.c.previewOpen; render(); },
-  'c-upload-screen': () => { state.conditionPhase = 5; render(); },
-  'c-submit-upload': () => { state.conditionPhase = 6; render(); },
-  'open-folder': (target) => {
-    state.c.activeFolder = target.dataset.folder;
-    state.c.previewOpen = true;
-    state.conditionPhase = 4;
-    render();
-  },
-  'c-select-folder': () => {
-    const id = state.c.activeFolder || FOLDERS[0].id;
-    if (!state.c.selectedFolders.includes(id)) state.c.selectedFolders.push(id);
-    state.conditionPhase = 3;
-    render();
-  },
-  'c-remove-chip': (target) => {
-    state.c.selectedFolders = state.c.selectedFolders.filter(id => id !== target.dataset.folder);
-    render();
-  }
 };
 
 app.addEventListener('click', (e) => {
@@ -995,17 +814,13 @@ app.addEventListener('change', (e) => {
   const fileCb = e.target.closest('input[type="checkbox"][data-file]');
   if (fileCb) {
     const id = fileCb.dataset.file;
-    state.a.selectedFiles = fileCb.checked
-      ? [...new Set([...state.a.selectedFiles, id])]
-      : state.a.selectedFiles.filter(f => f !== id);
+    state.c.selectedFiles = fileCb.checked
+      ? [...new Set([...state.c.selectedFiles, id])]
+      : state.c.selectedFiles.filter(f => f !== id);
     render();
   }
 });
 
-app.addEventListener('input', (e) => {
-  const ta = e.target.closest('[data-role="c-note"]');
-  if (ta) state.c.note = ta.value;
-});
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
 
