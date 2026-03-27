@@ -1,33 +1,33 @@
 /* ─── Design Tokens ──────────────────────────────────── */
 :root {
   /* Backgrounds */
-  --bg:          #F5F3F0;
+  --bg:          #FFFFFF;
   --surface:     #FFFFFF;
-  --surface-2:   #FAF9F7;
-  --surface-3:   #F2EFE9;
+  --surface-2:   #F7F7F8;
+  --surface-3:   #EFEFEF;
 
   /* Text */
-  --text-primary:   #1A1311;
-  --text-secondary: #5C5148;
-  --text-muted:     #958880;
-  --text-faint:     #B5ACA5;
+  --text-primary:   #0D0D0D;
+  --text-secondary: #4A4A4A;
+  --text-muted:     #8E8EA0;
+  --text-faint:     #C2C2C2;
 
   /* Brand */
-  --primary:     #1A1311;
-  --mid-brown:   #5C5148;
-  --muted:       #958880;
-  --beige:       #E8E0D6;
+  --primary:     #0D0D0D;
+  --mid-brown:   #4A4A4A;
+  --muted:       #8E8EA0;
+  --beige:       #E5E5E5;
   --card-bg:     #FFFFFF;
 
   /* Borders */
-  --border:      rgba(60, 40, 25, 0.10);
-  --border-mid:  rgba(60, 40, 25, 0.16);
+  --border:      rgba(0, 0, 0, 0.08);
+  --border-mid:  rgba(0, 0, 0, 0.14);
 
   /* Shadows */
-  --shadow-xs:   0 1px 2px rgba(30, 18, 10, 0.06);
-  --shadow-sm:   0 2px 8px rgba(30, 18, 10, 0.07), 0 1px 2px rgba(30, 18, 10, 0.04);
-  --shadow-md:   0 4px 16px rgba(30, 18, 10, 0.09), 0 2px 4px rgba(30, 18, 10, 0.05);
-  --shadow-lg:   0 8px 32px rgba(30, 18, 10, 0.12), 0 2px 8px rgba(30, 18, 10, 0.06);
+  --shadow-xs:   0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-sm:   0 2px 8px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-md:   0 4px 16px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.04);
+  --shadow-lg:   0 8px 32px rgba(0, 0, 0, 0.10), 0 2px 8px rgba(0, 0, 0, 0.05);
 
   /* Semantic */
   --warn-bg:     #FFF7EC;
@@ -39,8 +39,8 @@
 
   /* Chat */
   --bubble-ai:    #FFFFFF;
-  --bubble-user:  #1A1311;
-  --bubble-gpt:   #F0FAF7;
+  --bubble-user:  #0D0D0D;
+  --bubble-gpt:   #F7F7F8;
 
   /* Radius */
   --r-sm:  8px;
@@ -215,18 +215,18 @@ button, input, textarea, select { font: inherit; }
 .btn-primary {
   background: var(--text-primary);
   color: #fff;
-  box-shadow: 0 1px 3px rgba(30, 18, 10, 0.18), 0 4px 12px rgba(30, 18, 10, 0.12);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.14), 0 4px 12px rgba(0, 0, 0, 0.10);
 }
 
 .btn-primary:hover:not(:disabled) {
-  background: #2D1F16;
-  box-shadow: 0 2px 8px rgba(30, 18, 10, 0.22), 0 6px 16px rgba(30, 18, 10, 0.14);
+  background: #2A2A2A;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18), 0 6px 16px rgba(0, 0, 0, 0.12);
   transform: translateY(-1px);
 }
 
 .btn-primary:active:not(:disabled) {
   transform: translateY(0);
-  box-shadow: 0 1px 2px rgba(30, 18, 10, 0.14);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.10);
 }
 
 .btn-secondary {
@@ -585,9 +585,9 @@ button, input, textarea, select { font: inherit; }
 }
 
 .gpt-label {
-  color: #0B7A5C;
-  border-color: #A8D8C8;
-  background: #F0FAF7;
+  color: var(--text-secondary);
+  border-color: var(--border);
+  background: var(--surface-2);
 }
 
 .claude-label {
@@ -603,8 +603,8 @@ button, input, textarea, select { font: inherit; }
 }
 
 .ai-gpt-bubble {
-  background: #F0FAF7;
-  border-color: #B8DDD2;
+  background: var(--surface-2);
+  border-color: var(--border);
   border-radius: 18px 18px 4px 18px;
 }
 
@@ -651,7 +651,7 @@ button, input, textarea, select { font: inherit; }
 
 .file-row {
   padding: 10px 14px;
-  border-bottom: 1px solid rgba(60, 40, 25, 0.06);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
   cursor: pointer;
   transition: background 0.12s ease;
   display: flex;
@@ -701,8 +701,8 @@ button, input, textarea, select { font: inherit; }
 
 .badge {
   border: 1px solid var(--border);
-  background: #FFF8EE;
-  color: #8A5C1A;
+  background: var(--surface-3);
+  color: var(--text-secondary);
   border-radius: 999px;
   padding: 3px 8px;
   font-size: 10.5px;
@@ -715,7 +715,7 @@ button, input, textarea, select { font: inherit; }
   justify-content: space-between;
   gap: 10px;
   padding: 10px 0;
-  border-bottom: 1px solid rgba(60, 40, 25, 0.06);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-size: 12.5px;
   color: var(--text-primary);
@@ -724,8 +724,8 @@ button, input, textarea, select { font: inherit; }
 .folder-file:last-child { border-bottom: 0; }
 
 .code-block {
-  background: #17120F;
-  color: #E8DDD4;
+  background: #1A1A1A;
+  color: #E5E5E5;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-size: 11.5px;
   padding: 16px 18px;
@@ -927,7 +927,7 @@ textarea {
 
 textarea:focus {
   border-color: var(--border-mid);
-  box-shadow: 0 0 0 3px rgba(30, 18, 10, 0.06);
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05);
 }
 
 /* ─── Message stagger animation ──────────────────────── */
@@ -1147,7 +1147,7 @@ textarea:focus {
   justify-content: space-between;
   align-items: center;
   padding: 9px 0;
-  border-bottom: 1px solid rgba(60, 40, 25, 0.06);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
   font-size: 13px;
   color: var(--text-primary);
 }
@@ -1385,7 +1385,7 @@ textarea:focus {
 }
 
 .sim-toggle.on {
-  background: #0066CC;
+  background: #0D0D0D;
 }
 
 .sim-toggle.on::after {
@@ -1394,7 +1394,7 @@ textarea:focus {
 
 /* ─── Condition B: GPT avatar ────────────────────────── */
 .avatar-gpt {
-  background: #19C37D;
+  background: #3D3D3D;
   color: #fff;
   font-size: 11px;
   font-weight: 700;

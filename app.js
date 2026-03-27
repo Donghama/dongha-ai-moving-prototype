@@ -1,10 +1,5 @@
 // ─── Static Data ─────────────────────────────────────────────────────────────
 
-const ORDERS = [
-  ['A', 'B', 'C'], ['B', 'C', 'A'], ['C', 'A', 'B'],
-  ['A', 'C', 'B'], ['B', 'A', 'C'], ['C', 'B', 'A']
-];
-
 const TRANSFER_ITEMS = [
   '자주 다루는 업무·학습 주제',
   '선호하는 답변 형식',
@@ -108,11 +103,8 @@ const FOLDERS = [
 
 // ─── State ────────────────────────────────────────────────────────────────────
 
-const visitCount = parseInt(localStorage.getItem('visitCount') || '0', 10);
-localStorage.setItem('visitCount', String(visitCount + 1));
-
 const state = {
-  order: ORDERS[visitCount % 6],
+  order: ['A', 'B', 'C'],
   currentStep: 0,
   phase: 'start',       // 'start' | 'scenario' | 'condition' | 'interstitial' | 'end'
   conditionPhase: 1,
@@ -950,7 +942,9 @@ const actions = {
   'a-settings':      () => { state.conditionPhase = 3; render(); },
   'a-export-data':   () => { state.conditionPhase = 4; render(); },
   'a-download-link': () => {
-    state.a.downloadPhase = 'downloading'; render();
+    state.conditionPhase = 5;
+    state.a.downloadPhase = 'downloading';
+    render();
     schedule(() => { state.a.downloadPhase = 'done'; render(); }, 2000);
   },
   'a-to-file-select': () => { state.conditionPhase = 6; render(); },
